@@ -25,8 +25,13 @@ Basic use
 
 You can use socorro-siggen as a command line::
 
-    $ siggen JSONFILE
+    $ siggen <JSONFILE>
     SIGNATURE HERE
+
+
+Alternatively::
+
+    $ cat <JSONFILE> | siggen
 
 
 You can use socorro-siggen as a library::

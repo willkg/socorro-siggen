@@ -55,24 +55,29 @@ class SignatureGenerator:
             signature and processor notes
 
         """
+        # NOTE(willkg): Rules mutate the result structure in-place
         result = {
             'signature': {},
             'notes': []
         }
 
         for rule in self.pipeline:
-            notes = []
             try:
                 if rule.predicate(signature_data):
                     old_sig = result['signature']
                     rule.action(signature_data, result)
+
                     if self.debug:
-                        notes.append('%s: %s -> %s' % (
-                            rule.__class__.__name__, old_sig, result['signature']
-                        ))
+                        result['notes'].append(
+                            '%s: %s -> %s' % (
+                                rule.__class__.__name__,
+                                old_sig,
+                                result['signature']
+                            )
+                        )
 
             except Exception as exc:
-                logger.error('Error!', exc_info=True)
-                notes.append('Rule %s failed: %s' % (rule.__class__.__name__, exc))
+                logger.exception('Error running %r', rule)
+                result['notes'].append('Rule %s failed: %s' % (rule.__class__.__name__, exc))
 
         return result

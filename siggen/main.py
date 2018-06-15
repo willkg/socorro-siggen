@@ -27,7 +27,7 @@ Note: In order for the SignatureJitCategory rule to work, you need a valid API t
 Socorro that has "View Personally Identifiable Information" permission.
 """
 
-logger = logging.getLogger('socorro.signature')
+logger = logging.getLogger('siggen')
 
 
 # FIXME(willkg): This hits production. We might want it configurable.
@@ -51,7 +51,7 @@ def setup_logging(logging_level):
             },
         },
         'loggers': {
-            'socorro': {
+            'siggen': {
                 'propagate': False,
                 'handlers': ['console'],
                 'level': logging_level,
@@ -143,11 +143,6 @@ def main(argv=None):
     """Takes crash data via args and generates a Socorro signature
 
     """
-    # Fix the case where the user ran "python -m socorro.signature --help" so
-    # it prints a helpful prog.
-    if sys.argv and '__main__.py' in sys.argv[0]:
-        sys.argv[0] = 'python -m socorro.signature'
-
     parser = argparse.ArgumentParser(description=DESCRIPTION, epilog=EPILOG)
     parser.add_argument(
         '-v', '--verbose', help='increase output verbosity', action='store_true'
