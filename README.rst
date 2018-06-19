@@ -25,13 +25,13 @@ Basic use
 
 You can use socorro-siggen as a command line::
 
-    $ siggen <JSONFILE>
+    $ signify <JSONFILE>
     SIGNATURE HERE
 
 
 Alternatively::
 
-    $ cat <JSONFILE> | siggen
+    $ cat <JSONFILE> | signify
 
 
 You can use socorro-siggen as a library::
@@ -41,6 +41,7 @@ You can use socorro-siggen as a library::
     generator = SignatureGenerator()
 
     crash_data = {
+        ...
     }
 
     ret = generator.generate(crash_data)
