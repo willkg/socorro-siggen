@@ -23,7 +23,8 @@ setup(
     install_requires=install_requires,
     entry_points="""
         [console_scripts]
-        siggen=siggen.main:cmdline
+        signify=siggen.cmd_signify:cmdline
+        fetch-data=siggen.cmd_fetch_data:cmdline
     """,
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
