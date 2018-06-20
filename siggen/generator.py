@@ -57,13 +57,13 @@ class SignatureGenerator:
         """
         # NOTE(willkg): Rules mutate the result structure in-place
         result = {
-            'signature': {},
+            'signature': '',
             'notes': []
         }
 
         for rule in self.pipeline:
             try:
-                if rule.predicate(signature_data):
+                if rule.predicate(signature_data, result):
                     old_sig = result['signature']
                     rule.action(signature_data, result)
 

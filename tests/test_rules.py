@@ -480,409 +480,395 @@ java.lang.IllegalArgumentException: Receiver not registered: org.mozilla.gecko.G
 #  rules testing section
 
 frames_from_json_dump = {
-    u'frames': [
+    'frames': [
         {
-            u'frame': 0,
-            u'function': u'NtWaitForMultipleObjects',
-            u'function_offset': u'0x15',
-            u'module': u'ntdll.dll',
-            u'module_offset': u'0x2015d',
-            u'offset': u'0x77ad015d',
-            u'registers': {
-                u'eax': u'0x00000040',
-                u'ebp': u'0x0025e968',
-                u'ebx': u'0x0025e91c',
-                u'ecx': u'0x00000000',
-                u'edi': u'0x00000000',
-                u'edx': u'0x00000000',
-                u'efl': u'0x00200246',
-                u'eip': u'0x77ad015d',
-                u'esi': u'0x00000004',
-                u'esp': u'0x0025e8cc'
+            'frame': 0,
+            'function': 'NtWaitForMultipleObjects',
+            'function_offset': '0x15',
+            'module': 'ntdll.dll',
+            'module_offset': '0x2015d',
+            'offset': '0x77ad015d',
+            'registers': {
+                'eax': '0x00000040',
+                'ebp': '0x0025e968',
+                'ebx': '0x0025e91c',
+                'ecx': '0x00000000',
+                'edi': '0x00000000',
+                'edx': '0x00000000',
+                'efl': '0x00200246',
+                'eip': '0x77ad015d',
+                'esi': '0x00000004',
+                'esp': '0x0025e8cc'
             },
-            u'trust': u'context'
+            'trust': 'context'
         },
         {
-            u'frame': 1,
-            u'function': u'WaitForMultipleObjectsEx',
-            u'function_offset': u'0xff',
-            u'module': u'KERNELBASE.dll',
-            u'module_offset': u'0x115f6',
-            u'offset': u'0x775e15f6',
-            u'trust': u'cfi'
+            'frame': 1,
+            'function': 'WaitForMultipleObjectsEx',
+            'function_offset': '0xff',
+            'module': 'KERNELBASE.dll',
+            'module_offset': '0x115f6',
+            'offset': '0x775e15f6',
+            'trust': 'cfi'
         },
         {
-            u'frame': 2,
-            u'function': u'WaitForMultipleObjectsExImplementation',
-            u'function_offset': u'0x8d',
-            u'module': u'kernel32.dll',
-            u'module_offset': u'0x119f7',
-            u'offset': u'0x766119f7',
-            u'trust': u'cfi'
+            'frame': 2,
+            'function': 'WaitForMultipleObjectsExImplementation',
+            'function_offset': '0x8d',
+            'module': 'kernel32.dll',
+            'module_offset': '0x119f7',
+            'offset': '0x766119f7',
+            'trust': 'cfi'
         },
         {
-            u'frame': 3,
-            u'function': u'RealMsgWaitForMultipleObjectsEx',
-            u'function_offset': u'0xe1',
-            u'module': u'user32.dll',
-            u'module_offset': u'0x20869',
-            u'offset': u'0x77370869',
-            u'trust': u'cfi'
+            'frame': 3,
+            'function': 'RealMsgWaitForMultipleObjectsEx',
+            'function_offset': '0xe1',
+            'module': 'user32.dll',
+            'module_offset': '0x20869',
+            'offset': '0x77370869',
+            'trust': 'cfi'
         },
         {
-            u'frame': 4,
-            u'function': u'MsgWaitForMultipleObjects',
-            u'function_offset': u'0x1e',
-            u'module': u'user32.dll',
-            u'module_offset': u'0x20b68',
-            u'offset': u'0x77370b68',
-            u'trust': u'cfi'
+            'frame': 4,
+            'function': 'MsgWaitForMultipleObjects',
+            'function_offset': '0x1e',
+            'module': 'user32.dll',
+            'module_offset': '0x20b68',
+            'offset': '0x77370b68',
+            'trust': 'cfi'
         },
         {
-            u'file': u'F117835525________________________________________',
-            u'frame': 5,
-            u'function': u'F_1152915508__________________________________',
-            u'function_offset': u'0xbb',
-            u'line': 118,
-            u'module': u'NPSWF32_14_0_0_125.dll',
-            u'module_offset': u'0x36a13b',
-            u'offset': u'0x5e3aa13b',
-            u'trust': u'cfi'
+            'file': 'F117835525________________________________________',
+            'frame': 5,
+            'function': 'F_1152915508__________________________________',
+            'function_offset': '0xbb',
+            'line': 118,
+            'module': 'NPSWF32_14_0_0_125.dll',
+            'module_offset': '0x36a13b',
+            'offset': '0x5e3aa13b',
+            'trust': 'cfi'
         },
         {
-            u'file': u'F_851861807_______________________________________',
-            u'frame': 6,
-            u'function': u'F2166389______________________________________',
-            u'function_offset': u'0xe5',
-            u'line': 552,
-            u'module': u'NPSWF32_14_0_0_125.dll',
-            u'module_offset': u'0x35faf5',
-            u'offset': u'0x5e39faf5',
-            u'trust': u'cfi'
+            'file': 'F_851861807_______________________________________',
+            'frame': 6,
+            'function': 'F2166389______________________________________',
+            'function_offset': '0xe5',
+            'line': 552,
+            'module': 'NPSWF32_14_0_0_125.dll',
+            'module_offset': '0x35faf5',
+            'offset': '0x5e39faf5',
+            'trust': 'cfi'
         },
         {
-            u'file': u'F_851861807_______________________________________',
-            u'frame': 7,
-            u'function': u'F_917831355___________________________________',
-            u'function_offset': u'0x29b',
-            u'line': 488,
-            u'module': u'NPSWF32_14_0_0_125.dll',
-            u'module_offset': u'0x360a7b',
-            u'offset': u'0x5e3a0a7b',
-            u'trust': u'cfi'
+            'file': 'F_851861807_______________________________________',
+            'frame': 7,
+            'function': 'F_917831355___________________________________',
+            'function_offset': '0x29b',
+            'line': 488,
+            'module': 'NPSWF32_14_0_0_125.dll',
+            'module_offset': '0x360a7b',
+            'offset': '0x5e3a0a7b',
+            'trust': 'cfi'
         },
         {
-            u'file': u'F_851861807_______________________________________',
-            u'frame': 8,
-            u'function': u'F1315696776________________________________',
-            u'function_offset': u'0xd',
-            u'line': 439,
-            u'module': u'NPSWF32_14_0_0_125.dll',
-            u'module_offset': u'0x35e2fd',
-            u'offset': u'0x5e39e2fd',
-            u'trust': u'cfi'
+            'file': 'F_851861807_______________________________________',
+            'frame': 8,
+            'function': 'F1315696776________________________________',
+            'function_offset': '0xd',
+            'line': 439,
+            'module': 'NPSWF32_14_0_0_125.dll',
+            'module_offset': '0x35e2fd',
+            'offset': '0x5e39e2fd',
+            'trust': 'cfi'
         },
         {
-            u'file': u'F_766591945_______________________________________',
-            u'frame': 9,
-            u'function': u'F_1428703866________________________________',
-            u'function_offset': u'0xc1',
-            u'line': 203,
-            u'module': u'NPSWF32_14_0_0_125.dll',
-            u'module_offset': u'0x35bf21',
-            u'offset': u'0x5e39bf21',
-            u'trust': u'cfi'
+            'file': 'F_766591945_______________________________________',
+            'frame': 9,
+            'function': 'F_1428703866________________________________',
+            'function_offset': '0xc1',
+            'line': 203,
+            'module': 'NPSWF32_14_0_0_125.dll',
+            'module_offset': '0x35bf21',
+            'offset': '0x5e39bf21',
+            'trust': 'cfi'
         }
     ],
-    u'threads_index': 0,
-    u'total_frames': 32
+    'threads_index': 0,
+    'frame_count': 32
 }
 
 frames_from_json_dump_with_templates = {
-    u'frames': [
+    'frames': [
         {
-            u'frame': 0,
-            u'function': u'NtWaitForMultipleObjects',
-            u'function_offset': u'0x15',
-            u'module': u'ntdll.dll',
-            u'module_offset': u'0x2015d',
-            u'offset': u'0x77ad015d',
-            u'registers': {
-                u'eax': u'0x00000040',
-                u'ebp': u'0x0025e968',
-                u'ebx': u'0x0025e91c',
-                u'ecx': u'0x00000000',
-                u'edi': u'0x00000000',
-                u'edx': u'0x00000000',
-                u'efl': u'0x00200246',
-                u'eip': u'0x77ad015d',
-                u'esi': u'0x00000004',
-                u'esp': u'0x0025e8cc'
+            'frame': 0,
+            'function': 'NtWaitForMultipleObjects',
+            'function_offset': '0x15',
+            'module': 'ntdll.dll',
+            'module_offset': '0x2015d',
+            'offset': '0x77ad015d',
+            'registers': {
+                'eax': '0x00000040',
+                'ebp': '0x0025e968',
+                'ebx': '0x0025e91c',
+                'ecx': '0x00000000',
+                'edi': '0x00000000',
+                'edx': '0x00000000',
+                'efl': '0x00200246',
+                'eip': '0x77ad015d',
+                'esi': '0x00000004',
+                'esp': '0x0025e8cc'
             },
-            u'trust': u'context'
+            'trust': 'context'
         },
         {
-            u'frame': 1,
-            u'function': u'Alpha<Bravo<Charlie>, Delta>::Echo<Foxtrot>',
-            u'function_offset': u'0xff',
-            u'module': u'KERNELBASE.dll',
-            u'module_offset': u'0x115f6',
-            u'offset': u'0x775e15f6',
-            u'trust': u'cfi'
+            'frame': 1,
+            'function': 'Alpha<Bravo<Charlie>, Delta>::Echo<Foxtrot>',
+            'function_offset': '0xff',
+            'module': 'KERNELBASE.dll',
+            'module_offset': '0x115f6',
+            'offset': '0x775e15f6',
+            'trust': 'cfi'
         },
         {
-            u'frame': 2,
-            u'function': u'WaitForMultipleObjectsExImplementation',
-            u'function_offset': u'0x8d',
-            u'module': u'kernel32.dll',
-            u'module_offset': u'0x119f7',
-            u'offset': u'0x766119f7',
-            u'trust': u'cfi'
+            'frame': 2,
+            'function': 'WaitForMultipleObjectsExImplementation',
+            'function_offset': '0x8d',
+            'module': 'kernel32.dll',
+            'module_offset': '0x119f7',
+            'offset': '0x766119f7',
+            'trust': 'cfi'
         },
         {
-            u'frame': 3,
-            u'function': u'RealMsgWaitForMultipleObjectsEx(void **fakeargs)',
-            u'function_offset': u'0xe1',
-            u'module': u'user32.dll',
-            u'module_offset': u'0x20869',
-            u'offset': u'0x77370869',
-            u'trust': u'cfi'
+            'frame': 3,
+            'function': 'RealMsgWaitForMultipleObjectsEx(void **fakeargs)',
+            'function_offset': '0xe1',
+            'module': 'user32.dll',
+            'module_offset': '0x20869',
+            'offset': '0x77370869',
+            'trust': 'cfi'
         },
         {
-            u'frame': 4,
-            u'function': u'MsgWaitForMultipleObjects',
-            u'function_offset': u'0x1e',
-            u'module': u'user32.dll',
-            u'module_offset': u'0x20b68',
-            u'offset': u'0x77370b68',
-            u'trust': u'cfi'
+            'frame': 4,
+            'function': 'MsgWaitForMultipleObjects',
+            'function_offset': '0x1e',
+            'module': 'user32.dll',
+            'module_offset': '0x20b68',
+            'offset': '0x77370b68',
+            'trust': 'cfi'
         },
         {
-            u'file': u'F117835525________________________________________',
-            u'frame': 5,
-            u'function': u'F_1152915508__________________________________',
-            u'function_offset': u'0xbb',
-            u'line': 118,
-            u'module': u'NPSWF32_14_0_0_125.dll',
-            u'module_offset': u'0x36a13b',
-            u'offset': u'0x5e3aa13b',
-            u'trust': u'cfi'
+            'file': 'F117835525________________________________________',
+            'frame': 5,
+            'function': 'F_1152915508__________________________________',
+            'function_offset': '0xbb',
+            'line': 118,
+            'module': 'NPSWF32_14_0_0_125.dll',
+            'module_offset': '0x36a13b',
+            'offset': '0x5e3aa13b',
+            'trust': 'cfi'
         },
         {
-            u'file': u'F_851861807_______________________________________',
-            u'frame': 6,
-            u'function': u'F2166389______________________________________',
-            u'function_offset': u'0xe5',
-            u'line': 552,
-            u'module': u'NPSWF32_14_0_0_125.dll',
-            u'module_offset': u'0x35faf5',
-            u'offset': u'0x5e39faf5',
-            u'trust': u'cfi'
+            'file': 'F_851861807_______________________________________',
+            'frame': 6,
+            'function': 'F2166389______________________________________',
+            'function_offset': '0xe5',
+            'line': 552,
+            'module': 'NPSWF32_14_0_0_125.dll',
+            'module_offset': '0x35faf5',
+            'offset': '0x5e39faf5',
+            'trust': 'cfi'
         },
         {
-            u'file': u'F_851861807_______________________________________',
-            u'frame': 7,
-            u'function': u'F_917831355___________________________________',
-            u'function_offset': u'0x29b',
-            u'line': 488,
-            u'module': u'NPSWF32_14_0_0_125.dll',
-            u'module_offset': u'0x360a7b',
-            u'offset': u'0x5e3a0a7b',
-            u'trust': u'cfi'
+            'file': 'F_851861807_______________________________________',
+            'frame': 7,
+            'function': 'F_917831355___________________________________',
+            'function_offset': '0x29b',
+            'line': 488,
+            'module': 'NPSWF32_14_0_0_125.dll',
+            'module_offset': '0x360a7b',
+            'offset': '0x5e3a0a7b',
+            'trust': 'cfi'
         },
         {
-            u'file': u'F_851861807_______________________________________',
-            u'frame': 8,
-            u'function': u'F1315696776________________________________',
-            u'function_offset': u'0xd',
-            u'line': 439,
-            u'module': u'NPSWF32_14_0_0_125.dll',
-            u'module_offset': u'0x35e2fd',
-            u'offset': u'0x5e39e2fd',
-            u'trust': u'cfi'
+            'file': 'F_851861807_______________________________________',
+            'frame': 8,
+            'function': 'F1315696776________________________________',
+            'function_offset': '0xd',
+            'line': 439,
+            'module': 'NPSWF32_14_0_0_125.dll',
+            'module_offset': '0x35e2fd',
+            'offset': '0x5e39e2fd',
+            'trust': 'cfi'
         },
         {
-            u'file': u'F_766591945_______________________________________',
-            u'frame': 9,
-            u'function': u'F_1428703866________________________________',
-            u'function_offset': u'0xc1',
-            u'line': 203,
-            u'module': u'NPSWF32_14_0_0_125.dll',
-            u'module_offset': u'0x35bf21',
-            u'offset': u'0x5e39bf21',
-            u'trust': u'cfi'
+            'file': 'F_766591945_______________________________________',
+            'frame': 9,
+            'function': 'F_1428703866________________________________',
+            'function_offset': '0xc1',
+            'line': 203,
+            'module': 'NPSWF32_14_0_0_125.dll',
+            'module_offset': '0x35bf21',
+            'offset': '0x5e39bf21',
+            'trust': 'cfi'
         }
     ],
-    u'threads_index': 0,
-    u'total_frames': 32
+    'threads_index': 0,
+    'total_frames': 32
 }
 
 frames_from_json_dump_with_templates_and_special_case = {
-    u'frames': [
+    'frames': [
         {
-            u'frame': 0,
-            u'function': u'NtWaitForMultipleObjects',
-            u'function_offset': u'0x15',
-            u'module': u'ntdll.dll',
-            u'module_offset': u'0x2015d',
-            u'offset': u'0x77ad015d',
-            u'registers': {
-                u'eax': u'0x00000040',
-                u'ebp': u'0x0025e968',
-                u'ebx': u'0x0025e91c',
-                u'ecx': u'0x00000000',
-                u'edi': u'0x00000000',
-                u'edx': u'0x00000000',
-                u'efl': u'0x00200246',
-                u'eip': u'0x77ad015d',
-                u'esi': u'0x00000004',
-                u'esp': u'0x0025e8cc'
+            'frame': 0,
+            'function': 'NtWaitForMultipleObjects',
+            'function_offset': '0x15',
+            'module': 'ntdll.dll',
+            'module_offset': '0x2015d',
+            'offset': '0x77ad015d',
+            'registers': {
+                'eax': '0x00000040',
+                'ebp': '0x0025e968',
+                'ebx': '0x0025e91c',
+                'ecx': '0x00000000',
+                'edi': '0x00000000',
+                'edx': '0x00000000',
+                'efl': '0x00200246',
+                'eip': '0x77ad015d',
+                'esi': '0x00000004',
+                'esp': '0x0025e8cc'
             },
-            u'trust': u'context'
+            'trust': 'context'
         },
         {
-            u'frame': 1,
-            u'function': u'<name omitted>',
-            u'function_offset': u'0xff',
-            u'module': u'KERNELBASE.dll',
-            u'module_offset': u'0x115f6',
-            u'offset': u'0x775e15f6',
-            u'trust': u'cfi'
+            'frame': 1,
+            'function': '<name omitted>',
+            'function_offset': '0xff',
+            'module': 'KERNELBASE.dll',
+            'module_offset': '0x115f6',
+            'offset': '0x775e15f6',
+            'trust': 'cfi'
         },
         {
-            u'frame': 2,
-            u'function': u'IPC::ParamTraits<mozilla::net::NetAddr>::Write',
-            u'function_offset': u'0x8d',
-            u'module': u'kernel32.dll',
-            u'module_offset': u'0x119f7',
-            u'offset': u'0x766119f7',
-            u'trust': u'cfi'
+            'frame': 2,
+            'function': 'IPC::ParamTraits<mozilla::net::NetAddr>::Write',
+            'function_offset': '0x8d',
+            'module': 'kernel32.dll',
+            'module_offset': '0x119f7',
+            'offset': '0x766119f7',
+            'trust': 'cfi'
         },
         {
-            u'frame': 3,
-            u'function': u'RealMsgWaitForMultipleObjectsEx(void **fakeargs)',
-            u'function_offset': u'0xe1',
-            u'module': u'user32.dll',
-            u'module_offset': u'0x20869',
-            u'offset': u'0x77370869',
-            u'trust': u'cfi'
+            'frame': 3,
+            'function': 'RealMsgWaitForMultipleObjectsEx(void **fakeargs)',
+            'function_offset': '0xe1',
+            'module': 'user32.dll',
+            'module_offset': '0x20869',
+            'offset': '0x77370869',
+            'trust': 'cfi'
         },
         {
-            u'frame': 4,
-            u'function': u'MsgWaitForMultipleObjects',
-            u'function_offset': u'0x1e',
-            u'module': u'user32.dll',
-            u'module_offset': u'0x20b68',
-            u'offset': u'0x77370b68',
-            u'trust': u'cfi'
+            'frame': 4,
+            'function': 'MsgWaitForMultipleObjects',
+            'function_offset': '0x1e',
+            'module': 'user32.dll',
+            'module_offset': '0x20b68',
+            'offset': '0x77370b68',
+            'trust': 'cfi'
         },
         {
-            u'file': u'F117835525________________________________________',
-            u'frame': 5,
-            u'function': u'F_1152915508__________________________________',
-            u'function_offset': u'0xbb',
-            u'line': 118,
-            u'module': u'NPSWF32_14_0_0_125.dll',
-            u'module_offset': u'0x36a13b',
-            u'offset': u'0x5e3aa13b',
-            u'trust': u'cfi'
+            'file': 'F117835525________________________________________',
+            'frame': 5,
+            'function': 'F_1152915508__________________________________',
+            'function_offset': '0xbb',
+            'line': 118,
+            'module': 'NPSWF32_14_0_0_125.dll',
+            'module_offset': '0x36a13b',
+            'offset': '0x5e3aa13b',
+            'trust': 'cfi'
         },
         {
-            u'file': u'F_851861807_______________________________________',
-            u'frame': 6,
-            u'function': u'F2166389______________________________________',
-            u'function_offset': u'0xe5',
-            u'line': 552,
-            u'module': u'NPSWF32_14_0_0_125.dll',
-            u'module_offset': u'0x35faf5',
-            u'offset': u'0x5e39faf5',
-            u'trust': u'cfi'
+            'file': 'F_851861807_______________________________________',
+            'frame': 6,
+            'function': 'F2166389______________________________________',
+            'function_offset': '0xe5',
+            'line': 552,
+            'module': 'NPSWF32_14_0_0_125.dll',
+            'module_offset': '0x35faf5',
+            'offset': '0x5e39faf5',
+            'trust': 'cfi'
         },
         {
-            u'file': u'F_851861807_______________________________________',
-            u'frame': 7,
-            u'function': u'F_917831355___________________________________',
-            u'function_offset': u'0x29b',
-            u'line': 488,
-            u'module': u'NPSWF32_14_0_0_125.dll',
-            u'module_offset': u'0x360a7b',
-            u'offset': u'0x5e3a0a7b',
-            u'trust': u'cfi'
+            'file': 'F_851861807_______________________________________',
+            'frame': 7,
+            'function': 'F_917831355___________________________________',
+            'function_offset': '0x29b',
+            'line': 488,
+            'module': 'NPSWF32_14_0_0_125.dll',
+            'module_offset': '0x360a7b',
+            'offset': '0x5e3a0a7b',
+            'trust': 'cfi'
         },
         {
-            u'file': u'F_851861807_______________________________________',
-            u'frame': 8,
-            u'function': u'F1315696776________________________________',
-            u'function_offset': u'0xd',
-            u'line': 439,
-            u'module': u'NPSWF32_14_0_0_125.dll',
-            u'module_offset': u'0x35e2fd',
-            u'offset': u'0x5e39e2fd',
-            u'trust': u'cfi'
+            'file': 'F_851861807_______________________________________',
+            'frame': 8,
+            'function': 'F1315696776________________________________',
+            'function_offset': '0xd',
+            'line': 439,
+            'module': 'NPSWF32_14_0_0_125.dll',
+            'module_offset': '0x35e2fd',
+            'offset': '0x5e39e2fd',
+            'trust': 'cfi'
         },
         {
-            u'file': u'F_766591945_______________________________________',
-            u'frame': 9,
-            u'function': u'F_1428703866________________________________',
-            u'function_offset': u'0xc1',
-            u'line': 203,
-            u'module': u'NPSWF32_14_0_0_125.dll',
-            u'module_offset': u'0x35bf21',
-            u'offset': u'0x5e39bf21',
-            u'trust': u'cfi'
+            'file': 'F_766591945_______________________________________',
+            'frame': 9,
+            'function': 'F_1428703866________________________________',
+            'function_offset': '0xc1',
+            'line': 203,
+            'module': 'NPSWF32_14_0_0_125.dll',
+            'module_offset': '0x35bf21',
+            'offset': '0x5e39bf21',
+            'trust': 'cfi'
         }
     ],
-    u'threads_index': 0,
-    u'total_frames': 32
+    'threads_index': 0,
+    'total_frames': 32
 }
 
 
-sample_json_dump = {
-    u'json_dump': {
-        u'system_info': {
-            'os': 'Windows NT'
-        },
-        u'crash_info': {
-            u'address': u'0x77ad015d',
-            u'crashing_thread': 0,
-            u'type': u'EXCEPTION_BREAKPOINT'
-        },
-        u'crashing_thread': frames_from_json_dump,
-        u'threads': [frames_from_json_dump]
-
-    }
+sample_crash_data = {
+    'os': 'Windows NT',
+    'threads': [frames_from_json_dump]
 }
 
 sample_json_dump_with_templates = {
-    u'json_dump': {
-        u'system_info': {
+    'json_dump': {
+        'system_info': {
             'os': 'Windows NT'
         },
-        u'crash_info': {
-            u'address': u'0x77ad015d',
-            u'crashing_thread': 0,
-            u'type': u'EXCEPTION_BREAKPOINT'
+        'crash_info': {
+            'address': '0x77ad015d',
+            'crashing_thread': 0,
+            'type': 'EXCEPTION_BREAKPOINT'
         },
-        u'crashing_thread': frames_from_json_dump_with_templates,
-        u'threads': [frames_from_json_dump_with_templates]
-
+        'crashing_thread': frames_from_json_dump_with_templates,
+        'threads': [frames_from_json_dump_with_templates]
     }
 }
 
 sample_json_dump_with_templates_and_special_case = {
-    u'json_dump': {
-        u'system_info': {
+    'json_dump': {
+        'system_info': {
             'os': 'Windows NT'
         },
-        u'crash_info': {
-            u'address': u'0x77ad015d',
-            u'crashing_thread': 0,
-            u'type': u'EXCEPTION_BREAKPOINT'
+        'crash_info': {
+            'address': '0x77ad015d',
+            'crashing_thread': 0,
+            'type': 'EXCEPTION_BREAKPOINT'
         },
-        u'crashing_thread':
-            frames_from_json_dump_with_templates_and_special_case,
-        u'threads': [frames_from_json_dump_with_templates_and_special_case]
-
+        'crashing_thread': frames_from_json_dump_with_templates_and_special_case,
+        'threads': [frames_from_json_dump_with_templates_and_special_case]
     }
 }
 
@@ -893,55 +879,63 @@ class TestSignatureGeneration:
         sgr = SignatureGenerationRule()
         frame_signatures_list = sgr._create_frame_list(frames_from_json_dump)
         expected = [
-            u'NtWaitForMultipleObjects',
-            u'WaitForMultipleObjectsEx',
-            u'WaitForMultipleObjectsExImplementation',
-            u'RealMsgWaitForMultipleObjectsEx',
-            u'MsgWaitForMultipleObjects',
-            u'F_1152915508__________________________________',
-            u'F2166389______________________________________',
-            u'F_917831355___________________________________',
-            u'F1315696776________________________________',
-            u'F_1428703866________________________________'
+            'NtWaitForMultipleObjects',
+            'WaitForMultipleObjectsEx',
+            'WaitForMultipleObjectsExImplementation',
+            'RealMsgWaitForMultipleObjectsEx',
+            'MsgWaitForMultipleObjects',
+            'F_1152915508__________________________________',
+            'F2166389______________________________________',
+            'F_917831355___________________________________',
+            'F1315696776________________________________',
+            'F_1428703866________________________________'
         ]
         assert frame_signatures_list == expected
         assert 'normalized' in frames_from_json_dump['frames'][0]
         assert frames_from_json_dump['frames'][0]['normalized'] == expected[0]
 
-    def test_action_1(self):
+    def test_java_stack_trace(self):
         sgr = SignatureGenerationRule()
 
-        raw_crash = {
-            'JavaStackTrace': (
+        crash_data = {
+            'java_stack_trace': (
                 '   SomeJavaException: %s  \nat org.mozilla.lars.myInvention(larsFile.java)' %
                 ('t' * 1000)
             )
         }
 
-        processed_crash = {}
-        notes = []
+        signature = {
+            'signature': '',
+            'notes': []
+        }
 
         # the call to be tested
-        assert sgr.action(raw_crash, processed_crash, notes) is True
+        assert sgr.action(crash_data, signature) is True
 
         expected = 'SomeJavaException: at org.mozilla.lars.myInvention(larsFile.java)'
-        assert processed_crash['signature'] == expected
-        assert 'proto_signature' not in processed_crash
+        assert signature['signature'] == expected
+        assert 'proto_signature' not in signature
         expected = ['JavaSignatureTool: dropped Java exception description due to length']
-        assert notes == expected
+        assert signature['notes'] == expected
 
-    def test_action_2(self):
+    def test_c_stack_trace(self):
         sgr = SignatureGenerationRule()
 
-        raw_crash = {}
-        processed_crash = dict(sample_json_dump)
-        notes = []
+        crash_data = {
+            'os': 'Windows NT',
+            'threads': [frames_from_json_dump]
+        }
+        result = {
+            'signature': '',
+            'notes': []
+        }
 
         # the call to be tested
-        assert sgr.action(raw_crash, processed_crash, notes) is True
+        assert sgr.action(crash_data, result) is True
 
         expected = 'MsgWaitForMultipleObjects | F_1152915508__________________________________'
-        assert processed_crash['signature'] == expected
+        assert result['signature'] == expected
+
         expected = (
             'NtWaitForMultipleObjects | WaitForMultipleObjectsEx | '
             'WaitForMultipleObjectsExImplementation | '
@@ -952,8 +946,8 @@ class TestSignatureGeneration:
             'F1315696776________________________________ | '
             'F_1428703866________________________________'
         )
-        assert processed_crash['proto_signature'] == expected
-        assert notes == []
+        assert result['proto_signature'] == expected
+        assert result['notes'] == []
 
     def test_action_2_with_templates(self):
         sgr = SignatureGenerationRule()
@@ -1035,29 +1029,30 @@ class TestSignatureGeneration:
     def test_lower_case_modules(self):
         sgr = SignatureGenerationRule()
 
+        # FIXME(willkg): Don't use sample crash data here.
         raw_crash = {}
-        processed_crash = copy.deepcopy(sample_json_dump)
+        processed_crash = copy.deepcopy(sample_crash_data)
         processed_crash['json_dump']['threads'] = [
             {
                 "frames": [
                     {
-                        u'offset': u'0x5e39bf21',
-                        u'trust': u'cfi'
+                        'offset': '0x5e39bf21',
+                        'trust': 'cfi'
                     },
                     {
-                        u'offset': u'0x5e39bf21',
-                        u'trust': u'cfi'
+                        'offset': '0x5e39bf21',
+                        'trust': 'cfi'
                     },
                     {
-                        u'offset': u'0x5e39bf21',
-                        u'trust': u'cfi'
+                        'offset': '0x5e39bf21',
+                        'trust': 'cfi'
                     },
                     {
-                        u'frame': 3,
-                        u'module': u'USER2.dll',
-                        u'module_offset': u'0x20869',
-                        u'offset': u'0x77370869',
-                        u'trust': u'cfi'
+                        'frame': 3,
+                        'module': 'USER2.dll',
+                        'module_offset': '0x20869',
+                        'offset': '0x77370869',
+                        'trust': 'cfi'
                     },
                 ]
             },
@@ -1256,7 +1251,7 @@ class TestAbortSignature:
 
         # Test with "unable to find a usable font" case
         (
-            u'unable to find a usable font (\u5fae\u8f6f\u96c5\u9ed1)',
+            'unable to find a usable font (\u5fae\u8f6f\u96c5\u9ed1)',
             'Abort | unable to find a usable font | hello'
         ),
     ])
@@ -1280,7 +1275,7 @@ class TestAbortSignature:
         # Non-ascii characters are removed from abort messages
         rule = AbortSignature()
         raw_crash = {
-            'AbortMessage': u'\u018a unknown'
+            'AbortMessage': '\u018a unknown'
         }
         processed_crash = {
             'signature': 'hello'
@@ -1435,7 +1430,7 @@ class TestSignatureWatchDogRule:
     def test_action(self):
         sgr = SignatureRunWatchDog()
 
-        processed_crash = copy.deepcopy(sample_json_dump)
+        processed_crash = copy.deepcopy(sample_crash_data)
         # Set a fake signature
         processed_crash['signature'] = 'foo::bar'
         notes = []
@@ -1712,15 +1707,16 @@ class TestSignatureIPCMessageName:
 
     def test_action_success(self):
         rule = SignatureIPCMessageName()
-        raw_crash = {
-            'IPCMessageName': 'foo, bar'
+        crash_data = {
+            'ipc_message_name': 'foo, bar'
         }
-        processed_crash = {
-            'signature': 'fooo::baar'
+        result = {
+            'signature': 'fooo::baar',
+            'notes': []
         }
-        action_result = rule.action(raw_crash, processed_crash, [])
+        action_result = rule.action(crash_data, result)
         assert action_result is True
-        assert processed_crash['signature'] == 'fooo::baar | IPC_Message_Name=foo, bar'
+        assert result['signature'] == 'fooo::baar | IPC_Message_Name=foo, bar'
 
 
 class TestSignatureParentIDNotEqualsChildID:

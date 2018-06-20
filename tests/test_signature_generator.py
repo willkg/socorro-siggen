@@ -8,7 +8,7 @@ from siggen.generator import SignatureGenerator
 class TestSignatureGenerator:
     def test_empty_dicts(self):
         generator = SignatureGenerator()
-        ret = generator.generate({}, {})
+        ret = generator.generate({})
 
         # NOTE(willkg): This is what the current pipeline yields. If any of those parts change, this
         # might change, too. The point of this test is that we can pass in empty dicts and the
@@ -28,7 +28,7 @@ class TestSignatureGenerator:
             pass
 
         generator = SignatureGenerator(pipeline=[BadRule()])
-        ret = generator.generate({}, {})
+        ret = generator.generate({})
 
         expected = {
             'notes': [
