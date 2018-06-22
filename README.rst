@@ -101,13 +101,13 @@ This is the schema for the crash data structure:
 
           The line in the file.
 
-        - module_offset:        int
+        - module_offset:        string
 
-          The offset in bytes in the module for this frame.
+          The offset in hex in the module for this frame.
 
-        - offset:               int
+        - offset:               string
 
-          The offset in memory for this frame.
+          The offset in hex for this frame.
 
       Signature parts are computed using frame data in this order:
 
@@ -194,11 +194,42 @@ minimal structure with just the parts you define.
 Examples
 ========
 
-Example ``crash_data_1.json``::
+Example almost minimal, somewhat nonsense ``crash_data.json``::
 
     {
-        "crashing_thread": 0,
+        "os": "Linux",
         "threads": [
-            {"module": 
+            {
+                "frames": [
+                    {
+                        "frame": 0,
+                        "function": "SomeFunc",
+                        "line": 20,
+                        "file": "somefile.cpp",
+                        "module": "foo.so.5.15.0",
+                        "module_offset": "0x37a92",
+                        "offset": "0x7fc641052a92"
+                    },
+                    {
+                        "frame": 1,
+                        "function": "SomeOtherFunc",
+                        "line": 444,
+                        "file": "someotherfile.cpp",
+                        "module": "bar.so",
+                        "module_offset": "0x39a55",
+                        "offset": "0x7fc641044a55"
+                    }
+                ]
+            }
         ]
+    }
+
+
+That produces this output::
+
+    $ cat crash_data.json | signify
+    {
+      "notes": [],
+      "proto_signature": "SomeFunc | SomeOtherFunc",
+      "signature": "SomeFunc"
     }
