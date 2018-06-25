@@ -76,7 +76,7 @@ class TestCSignatureTool:
             (('module', 'f( *s , &n)', 's', '23', '0xFFF'), 'f'),
             # this next one looks like a bug to me, but perhaps the situation
             # never comes up
-            #(('module', 'f(  *s , &n)', 's', '23', '0xFFF'), 'f(*s, &n)'),
+            # (('module', 'f(  *s , &n)', 's', '23', '0xFFF'), 'f(*s, &n)'),
             (('module', 'f3(s,t,u)', 's', '23', '0xFFF'), 'f3'),
             (
                 (

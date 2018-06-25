@@ -8,8 +8,6 @@ import argparse
 import json
 import sys
 
-from glom import glom
-
 from siggen.generator import SignatureGenerator
 
 

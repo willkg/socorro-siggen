@@ -769,6 +769,6 @@ class SignatureParentIDNotEqualsChildID(Rule):
         )
 
         # The MozCrashReason lists the assertion that failed, so we put "!=" in the signature
-        signature['signature'] = 'parentBuildID != childBuildID'
+        result['signature'] = 'parentBuildID != childBuildID'
 
         return True
