@@ -6,7 +6,7 @@ import mock
 from pkg_resources import resource_stream
 import pytest
 
-from siggen import siglists
+from siggen import siglists_utils
 
 
 def _fake_stream(pkg, filepath):
@@ -23,7 +23,7 @@ class TestSigLists:
         )
 
         for list_name in all_lists:
-            content = getattr(siglists, list_name)
+            content = getattr(siglists_utils, list_name)
             assert content
 
             for line in content:
@@ -31,7 +31,7 @@ class TestSigLists:
                 if isinstance(line, basestring):
                     assert not line.startswith('#')
 
-    @mock.patch('siggen.siglists.resource_stream')
+    @mock.patch('siggen.siglists_utils.resource_stream')
     def test_valid_entries(self, mocked_stream):
         mocked_stream.side_effect = _fake_stream
 
@@ -40,15 +40,15 @@ class TestSigLists:
             'moz::.*',
             '@0x[0-9a-fA-F]{2,}',
         )
-        content = siglists._get_file_content('test-valid-sig-list')
+        content = siglists_utils._get_file_content('test-valid-sig-list')
         assert content == expected
 
-    @mock.patch('siggen.siglists.resource_stream')
+    @mock.patch('siggen.siglists_utils.resource_stream')
     def test_invalid_entry(self, mocked_stream):
         mocked_stream.side_effect = _fake_stream
 
-        with pytest.raises(siglists.BadRegularExpressionLineError) as exc_info:
-            siglists._get_file_content('test-invalid-sig-list')
+        with pytest.raises(siglists_utils.BadRegularExpressionLineError) as exc_info:
+            siglists_utils._get_file_content('test-invalid-sig-list')
 
         msg = exc_info.exconly()
         assert msg.startswith('BadRegularExpressionLineError: Regex error: ')

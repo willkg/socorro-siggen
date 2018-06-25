@@ -153,11 +153,11 @@ conventions, and a bot that will automatically close bugs, so please make your
 commit message following this pattern: *Fixes bug XYZ - Desciption of the
 change*. Once you are ready, click *Propose file change*.
 
-That will create a branch in your fork of the socorro project, and take you to
+That will create a branch in your fork of the siggen project, and take you to
 the commit you just created. You can verify that the changes you made are
 correct, and then click *Create pull request*, and then *Create pull request*
 again. Once the pull request is opened, `Circle CI
-<https://circleci.com/gh/mozilla-services/socorro>`_ will automatically start
+<https://circleci.com/gh/willkg/socorro-siggen>`_ will automatically start
 running our test suite, which includes sanity checks for those signature lists.
 You can see the status of those tests in the pull request, and click the
 *Details* link to see logs in case of a failure.
@@ -175,6 +175,6 @@ in the repository, but don't care much about what happens in the rest of the
 Socorro repo, you can easily set a filter in your email client to do that.
 Here's an example filter you can use today:
 
-.. raw:: html
+::
 
-   <pre>to:(socorro@noreply.github.com) ("A socorro/siglists/" OR "M socorro/siglists/" OR "D socorro/siglists")</pre>
+   to:(siggen@noreply.github.com) ("A siggen/siglists/" OR "M siggen/siglists/" OR "D siggen/siglists")
