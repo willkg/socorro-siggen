@@ -39,7 +39,7 @@ class TestCSignatureTool:
         ss=('sentinel', ('sentinel2', lambda x: 'ff' in x)),
     ):
 
-        with mock.patch('siggen.rules.siglists') as mocked_siglists:
+        with mock.patch('siggen.rules.siglists_utils') as mocked_siglists:
             mocked_siglists.IRRELEVANT_SIGNATURE_RE = ig
             mocked_siglists.PREFIX_SIGNATURE_RE = pr
             mocked_siglists.SIGNATURES_WITH_LINE_NUMBERS_RE = si
@@ -1069,153 +1069,155 @@ class TestSignatureGeneration:
 
 
 class TestOOMSignature:
-
     def test_predicate_no_match(self):
-        processed_crash = {
-            'signature': 'hello'
+        result = {
+            'signature': 'hello',
+            'notes': []
         }
-        predicate_result = OOMSignature().predicate({}, processed_crash)
-        assert predicate_result is False
+        rule = OOMSignature()
+        assert rule.predicate({}, result) is False
 
     def test_predicate(self):
-        raw_crash = {
-            'OOMAllocationSize': 17
+        crash_data = {
+            'oom_allocation_size': 17
         }
-        processed_crash = {
-            'signature': 'hello'
+        result = {
+            'signature': 'hello',
+            'notes': []
         }
         rule = OOMSignature()
-        predicate_result = rule.predicate(raw_crash, processed_crash)
-        assert predicate_result is True
+        assert rule.predicate(crash_data, result) is True
 
     def test_predicate_signature_fragment_1(self):
-        processed_crash = {
-            'signature': 'this | is | a | NS_ABORT_OOM | signature'
+        crash_data = {}
+        result = {
+            'signature': 'this | is | a | NS_ABORT_OOM | signature',
+            'notes': []
         }
         rule = OOMSignature()
-        predicate_result = rule.predicate({}, processed_crash)
-        assert predicate_result is True
+        assert rule.predicate(crash_data, result) is True
 
     def test_predicate_signature_fragment_2(self):
-        processed_crash = {
-            'signature': 'mozalloc_handle_oom | this | is | bad'
+        crash_data = {}
+        result = {
+            'signature': 'mozalloc_handle_oom | this | is | bad',
+            'notes': []
         }
         rule = OOMSignature()
-        predicate_result = rule.predicate({}, processed_crash)
-        assert predicate_result is True
+        assert rule.predicate(crash_data, result) is True
 
     def test_predicate_signature_fragment_3(self):
-        processed_crash = {
-            'signature': 'CrashAtUnhandlableOOM'
+        crash_data = {}
+        result = {
+            'signature': 'CrashAtUnhandlableOOM',
+            'notes': []
         }
         rule = OOMSignature()
-        predicate_result = rule.predicate({}, processed_crash)
-        assert predicate_result is True
+        assert rule.predicate(crash_data, result) is True
 
     def test_action_success(self):
-        processed_crash = {
-            'signature': 'hello'
+        crash_data = {}
+        result = {
+            'signature': 'hello',
+            'notes': []
         }
         rule = OOMSignature()
-        action_result = rule.action({}, processed_crash, [])
+        action_result = rule.action(crash_data, result)
 
         assert action_result is True
-        assert processed_crash['original_signature'] == 'hello'
-        assert processed_crash['signature'] == 'OOM | unknown | hello'
+        assert result['signature'] == 'OOM | unknown | hello'
 
     def test_action_small(self):
-        processed_crash = {
-            'signature': 'hello'
+        crash_data = {
+            'oom_allocation_size': 17
         }
-        raw_crash = {
-            'OOMAllocationSize': 17
+        result = {
+            'signature': 'hello',
+            'notes': []
         }
         rule = OOMSignature()
-        action_result = rule.action(raw_crash, processed_crash, [])
+        action_result = rule.action(crash_data, result)
 
         assert action_result is True
-        assert processed_crash['original_signature'] == 'hello'
-        assert processed_crash['signature'] == 'OOM | small'
+        assert result['signature'] == 'OOM | small'
 
     def test_action_large(self):
-        processed_crash = {
-            'signature': 'hello'
+        crash_data = {
+            'oom_allocation_size': 17000000
         }
-        raw_crash = {
-            'OOMAllocationSize': 17000000
+        result = {
+            'signature': 'hello',
+            'notes': []
         }
 
         rule = OOMSignature()
-        action_result = rule.action(raw_crash, processed_crash, [])
+        action_result = rule.action(crash_data, result)
 
         assert action_result is True
-        assert processed_crash['original_signature'] == 'hello'
-        assert processed_crash['signature'] == 'OOM | large | hello'
+        assert result['signature'] == 'OOM | large | hello'
 
 
 class TestAbortSignature:
 
     def test_predicate(self):
         rule = AbortSignature()
-        raw_crash = {
-            'AbortMessage': 'something'
+        crash_data = {
+            'abort_message': 'something'
         }
-        processed_crash = {
-            'signature': 'hello'
+        result = {
+            'signature': 'hello',
+            'notes': []
         }
-        predicate_result = rule.predicate(raw_crash, processed_crash)
-        assert predicate_result is True
+        assert rule.predicate(crash_data, result) is True
 
     def test_predicate_no_match(self):
         rule = AbortSignature()
         # No AbortMessage
-        raw_crash = {}
-        processed_crash = {
+        crash_data = {}
+        result = {
             'signature': 'hello'
         }
-        predicate_result = rule.predicate(raw_crash, processed_crash)
-        assert predicate_result is False
+        assert rule.predicate(crash_data, result) is False
 
     def test_predicate_empty_message(self):
         rule = AbortSignature()
-        raw_crash = {
-            'AbortMessage': ''
+        crash_data = {
+            'abort_message': ''
         }
-        processed_crash = {
-            'signature': 'hello'
+        result = {
+            'signature': 'hello',
+            'notes': []
         }
-        predicate_result = rule.predicate(raw_crash, processed_crash)
-        assert predicate_result is False
+        assert rule.predicate(crash_data, result) is False
 
     def test_action_success(self):
         rule = AbortSignature()
-        raw_crash = {
-            'AbortMessage': 'unknown'
+        crash_data = {
+            'abort_message': 'unknown'
         }
-        processed_crash = {
-            'signature': 'hello'
+        result = {
+            'signature': 'hello',
+            'notes': []
         }
-        action_result = rule.action(raw_crash, processed_crash, [])
+        action_result = rule.action(crash_data, result)
         assert action_result is True
-        assert processed_crash['original_signature'] == 'hello'
-        assert processed_crash['signature'] == 'Abort | unknown | hello'
+        assert result['signature'] == 'Abort | unknown | hello'
 
     def test_action_success_long_message(self):
         rule = AbortSignature()
 
-        raw_crash = {
-            'AbortMessage': 'a' * 81
+        crash_data = {
+            'abort_message': 'a' * 81
         }
-        processed_crash = {
-            'signature': 'hello'
+        result = {
+            'signature': 'hello',
+            'notes': []
         }
 
-        action_result = rule.action(raw_crash, processed_crash, [])
+        action_result = rule.action(crash_data, result)
 
         assert action_result is True
-        assert processed_crash['original_signature'] == 'hello'
-        expected_sig = 'Abort | {}... | hello'.format('a' * 77)
-        assert processed_crash['signature'] == expected_sig
+        assert result['signature'] == 'Abort | {}... | hello'.format('a' * 77)
 
     @pytest.mark.parametrize('abort_msg, expected', [
         # Test with just the "ABOR" thing at the start
@@ -1258,32 +1260,31 @@ class TestAbortSignature:
     def test_action_success_remove_unwanted_parts(self, abort_msg, expected):
         rule = AbortSignature()
 
-        raw_crash = {
-            'AbortMessage': abort_msg
+        crash_data = {
+            'abort_message': abort_msg
         }
-        processed_crash = {
+        result = {
             'signature': 'hello'
         }
 
-        action_result = rule.action(raw_crash, processed_crash, [])
+        action_result = rule.action(crash_data, result)
 
         assert action_result is True
-        assert processed_crash['original_signature'] == 'hello'
-        assert processed_crash['signature'] == expected
+        assert result['signature'] == expected
 
     def test_action_non_ascii_abort_message(self):
         # Non-ascii characters are removed from abort messages
         rule = AbortSignature()
-        raw_crash = {
-            'AbortMessage': '\u018a unknown'
+        crash_data = {
+            'abort_message': '\u018a unknown'
         }
-        processed_crash = {
-            'signature': 'hello'
+        result = {
+            'signature': 'hello',
+            'notes': []
         }
-        action_result = rule.action(raw_crash, processed_crash, [])
+        action_result = rule.action(crash_data, result)
         assert action_result is True
-        assert processed_crash['original_signature'] == 'hello'
-        assert processed_crash['signature'] == 'Abort | unknown | hello'
+        assert result['signature'] == 'Abort | unknown | hello'
 
 
 class TestSigFixWhitespace:
