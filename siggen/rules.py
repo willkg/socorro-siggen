@@ -687,7 +687,7 @@ class SignatureShutdownTimeout(Rule):
                 parts.append("(none)")
         except (ValueError, KeyError) as exc:
             parts.append("UNKNOWN")
-            return['notes'].append('Error parsing AsyncShutdownTimeout: {}'.format(exc))
+            result['notes'].append('Error parsing AsyncShutdownTimeout: {}'.format(exc))
 
         new_sig = ' | '.join(parts)
         result['notes'].append(

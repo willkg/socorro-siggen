@@ -1292,21 +1292,22 @@ class TestSigFixWhitespace:
     def test_predicate_no_match(self):
         rule = SigFixWhitespace()
 
-        processed_crash = {}
-        predicate_result = rule.predicate({}, processed_crash)
-        assert predicate_result is False
+        result = {
+            'signature': '',
+            'notes': []
+        }
+        assert rule.predicate({}, result) is True
 
-        processed_crash['signature'] = 42
-        predicate_result = rule.predicate({}, processed_crash)
-        assert predicate_result is False
+        result['signature'] = 42
+        assert rule.predicate({}, result) is False
 
     def test_predicate(self):
         rule = SigFixWhitespace()
-        processed_crash = {
-            'signature': 'fooo::baar'
+        result = {
+            'signature': 'fooo::baar',
+            'notes': []
         }
-        predicate_result = rule.predicate({}, processed_crash)
-        assert predicate_result is True
+        assert rule.predicate({}, result) is True
 
     @pytest.mark.parametrize('signature, expected', [
         # Leading and trailing whitespace are removed
@@ -1324,80 +1325,87 @@ class TestSigFixWhitespace:
     ])
     def test_whitespace_fixing(self, signature, expected):
         rule = SigFixWhitespace()
-        processed_crash = {
-            'signature': signature
+        result = {
+            'signature': signature,
+            'notes': []
         }
-        action_result = rule.action({}, processed_crash, [])
+        action_result = rule.action({}, result)
         assert action_result is True
-        assert processed_crash['signature'] == expected
+        assert result['signature'] == expected
 
 
 class TestSigTruncate:
 
     def test_predicate_no_match(self):
         rule = SigTruncate()
-        processed_crash = {
-            'signature': '0' * 100
+        result = {
+            'signature': '0' * 100,
+            'notes': []
         }
-        predicate_result = rule.predicate({}, processed_crash)
-        assert predicate_result is False
+        assert rule.predicate({}, result) is False
 
     def test_predicate(self):
         rule = SigTruncate()
-        processed_crash = {
-            'signature': '9' * 256
+        result = {
+            'signature': '9' * 256,
+            'notes': []
         }
-        predicate_result = rule.predicate({}, processed_crash)
-        assert predicate_result is True
+        assert rule.predicate({}, result) is True
 
     def test_action_success(self):
         rule = SigTruncate()
-        processed_crash = {
-            'signature': '9' * 256
+        result = {
+            'signature': '9' * 256,
+            'notes': []
         }
-        action_result = rule.action({}, processed_crash, [])
+        action_result = rule.action({}, result)
         assert action_result is True
-        assert len(processed_crash['signature']) == 255
-        assert processed_crash['signature'].endswith('9...')
+        assert len(result['signature']) == 255
+        assert result['signature'].endswith('9...')
 
 
 class TestStackwalkerErrorSignatureRule:
 
     def test_predicate_no_match_signature(self):
         rule = StackwalkerErrorSignatureRule()
-        processed_crash = {
-            'signature': '0' * 100
+        result = {
+            'signature': '0' * 100,
+            'notes': []
         }
-        predicate_result = rule.predicate({}, processed_crash)
-        assert predicate_result is False
+        assert rule.predicate({}, result) is False
 
     def test_predicate_no_match_missing_mdsw_status_string(self):
         rule = StackwalkerErrorSignatureRule()
-        processed_crash = {
-            'signature': 'EMPTY: like my soul'
+        result = {
+            'signature': 'EMPTY: like my soul',
+            'notes': []
         }
-        predicate_result = rule.predicate({}, processed_crash)
-        assert predicate_result is False
+        assert rule.predicate({}, result) is False
 
     def test_predicate(self):
         rule = StackwalkerErrorSignatureRule()
-        processed_crash = {
-            'signature': 'EMPTY: like my soul',
+        crash_data = {
             'mdsw_status_string': 'catastrophic stackwalker failure'
         }
-        predicate_result = rule.predicate({}, processed_crash)
-        assert predicate_result is True
+        result = {
+            'signature': 'EMPTY: like my soul',
+            'notes': []
+        }
+        assert rule.predicate(crash_data, result) is True
 
     def test_action_success(self):
         rule = StackwalkerErrorSignatureRule()
-        processed_crash = {
-            'signature': 'EMPTY: like my soul',
+        crash_data = {
             'mdsw_status_string': 'catastrophic stackwalker failure'
         }
-        action_result = rule.action({}, processed_crash, [])
+        result = {
+            'signature': 'EMPTY: like my soul',
+            'notes': []
+        }
+        action_result = rule.action(crash_data, result)
         assert action_result is True
         expected = 'EMPTY: like my soul; catastrophic stackwalker failure'
-        assert processed_crash['signature'] == expected
+        assert result['signature'] == expected
 
 
 class TestSignatureWatchDogRule:
@@ -1413,20 +1421,23 @@ class TestSignatureWatchDogRule:
     def test_predicate(self):
         srwd = SignatureRunWatchDog()
 
-        fake_processed_crash = {
+        result = {
             'signature': "I'm not real",
+            'notes': []
         }
-        assert srwd.predicate({}, fake_processed_crash) is False
+        assert srwd.predicate({}, result) is False
 
-        fake_processed_crash = {
+        result = {
             'signature': "mozilla::`anonymous namespace''::RunWatchdog(void*)",
+            'notes': []
         }
-        assert srwd.predicate({}, fake_processed_crash) is True
+        assert srwd.predicate({}, result) is True
 
-        fake_processed_crash = {
+        result = {
             'signature': "mozilla::(anonymous namespace)::RunWatchdog",
+            'notes': []
         }
-        assert srwd.predicate({}, fake_processed_crash) is True
+        assert srwd.predicate({}, result) is True
 
     def test_action(self):
         sgr = SignatureRunWatchDog()
@@ -1453,53 +1464,54 @@ class TestSignatureJitCategory:
     def test_predicate_no_match(self):
         rule = SignatureJitCategory()
 
-        processed_crash = {
-            'classifications': {}
+        crash_data = {}
+        result = {
+            'signature': '',
+            'notes': []
+        }
+        assert rule.predicate(crash_data, result) is False
+
+        crash_data = {
+            'jit_category': ''
+        }
+        result = {
+            'signature': '',
+            'notes': []
         }
 
-        predicate_result = rule.predicate({}, processed_crash)
-        assert predicate_result is False
-
-        processed_crash['classifications']['jit'] = {}
-        predicate_result = rule.predicate({}, processed_crash)
-        assert predicate_result is False
-
-        processed_crash['classifications']['jit']['category'] = ''
-        predicate_result = rule.predicate({}, processed_crash)
-        assert predicate_result is False
+        assert rule.predicate(crash_data, result) is False
 
     def test_predicate(self):
         rule = SignatureJitCategory()
 
-        processed_crash = {
-            'classifications': {
-                'jit': {
-                    'category': 'JIT Crash'
-                }
-            }
+        crash_data = {
+            'jit_category': 'JIT Crash'
+        }
+        result = {
+            'signature': '',
+            'notes': []
         }
 
-        predicate_result = rule.predicate({}, processed_crash)
-        assert predicate_result is True
+        assert rule.predicate(crash_data, result) is True
 
     def test_action_success(self):
         rule = SignatureJitCategory()
 
-        processed_crash = {
-            'signature': 'foo::bar',
-            'classifications': {
-                'jit': {
-                    'category': 'JIT Crash'
-                }
-            }
+        crash_data = {
+            'jit_category': 'JIT Crash'
         }
-        notes = []
+        result = {
+            'signature': 'foo::bar',
+            'notes': []
+        }
 
-        action_result = rule.action({}, processed_crash, notes)
+        action_result = rule.action(crash_data, result)
         assert action_result is True
-        assert processed_crash['signature'] == 'jit | JIT Crash'
-        expected = ['Signature replaced with a JIT Crash Category, was: "foo::bar"']
-        assert notes == expected
+        assert result['signature'] == 'jit | JIT Crash'
+        assert (
+            result['notes'] ==
+            ['Signature replaced with a JIT Crash Category, was: "foo::bar"']
+        )
 
 
 class TestSignatureIPCChannelError:
@@ -1507,117 +1519,141 @@ class TestSignatureIPCChannelError:
     def test_predicate_no_match(self):
         rule = SignatureIPCChannelError()
 
-        raw_crash = {}
-        predicate_result = rule.predicate(raw_crash, {})
-        assert predicate_result is False
+        result = {
+            'signature': '',
+            'notes': []
+        }
 
-        raw_crash['ipc_channel_error'] = ''
-        predicate_result = rule.predicate(raw_crash, {})
-        assert predicate_result is False
+        assert rule.predicate({}, result) is False
+
+        crash_data = {
+            'ipc_channel_error': ''
+        }
+        result = {
+            'signature': '',
+            'notes': []
+        }
+        assert rule.predicate(crash_data, result) is False
 
     def test_predicate(self):
         rule = SignatureIPCChannelError()
 
-        raw_crash = {
+        crash_data = {
             'ipc_channel_error': 'foo, bar'
         }
+        result = {
+            'signature': '',
+            'notes': []
+        }
 
-        predicate_result = rule.predicate(raw_crash, {})
-        assert predicate_result is True
+        assert rule.predicate(crash_data, result) is True
 
     def test_action_success(self):
         rule = SignatureIPCChannelError()
 
-        raw_crash = {
+        crash_data = {
             'ipc_channel_error': 'ipc' * 50
         }
-        processed_crash = {
-            'signature': 'foo::bar'
+        result = {
+            'signature': 'foo::bar',
+            'notes': []
         }
-        notes = []
 
-        action_result = rule.action(raw_crash, processed_crash, notes)
+        action_result = rule.action(crash_data, result)
         assert action_result is True
         expected = 'IPCError-content | {}'.format(('ipc' * 50)[:100])
-        assert processed_crash['signature'] == expected
-        expected = ['Signature replaced with an IPC Channel Error, was: "foo::bar"']
-        assert notes == expected
+        assert result['signature'] == expected
+        assert (
+            result['notes'] ==
+            ['Signature replaced with an IPC Channel Error, was: "foo::bar"']
+        )
 
         # Now test with a browser crash.
-        processed_crash['signature'] = 'foo::bar'
-        raw_crash['additional_minidumps'] = 'browser'
-        notes = []
+        crash_data['additional_minidumps'] = 'browser'
+        result = {
+            'signature': 'foo::bar',
+            'notes': []
+        }
 
-        action_result = rule.action(raw_crash, processed_crash, notes)
+        action_result = rule.action(crash_data, result)
         assert action_result is True
 
-        expected = 'IPCError-browser | {}'.format(('ipc' * 50)[:100])
-        assert processed_crash['signature'] == expected
-        expected = ['Signature replaced with an IPC Channel Error, was: "foo::bar"']
-        assert notes == expected
+        assert result['signature'] == 'IPCError-browser | {}'.format(('ipc' * 50)[:100])
+        assert (
+            result['notes'] ==
+            ['Signature replaced with an IPC Channel Error, was: "foo::bar"']
+        )
 
 
 class TestSignatureShutdownTimeout:
 
     def test_predicate_no_match(self):
         rule = SignatureShutdownTimeout()
-        predicate_result = rule.predicate({}, {})
-        assert predicate_result is False
+        result = {
+            'signature': '',
+            'notes': []
+        }
+        assert rule.predicate({}, result) is False
 
     def test_predicate(self):
         rule = SignatureShutdownTimeout()
 
-        raw_crash = {
-            'AsyncShutdownTimeout': '{"foo": "bar"}'
+        crash_data = {
+            'async_shutdown_timeout': '{"foo": "bar"}'
         }
-
-        predicate_result = rule.predicate(raw_crash, {})
-        assert predicate_result is True
+        result = {
+            'signature': '',
+            'notes': []
+        }
+        assert rule.predicate(crash_data, result) is True
 
     def test_action_missing_valueerror(self):
         rule = SignatureShutdownTimeout()
 
-        raw_crash = {
-            'AsyncShutdownTimeout': '{{{{'
+        crash_data = {
+            'async_shutdown_timeout': '{{{{'
         }
-        processed_crash = {
-            'signature': 'foo'
+        result = {
+            'signature': 'foo',
+            'notes': []
         }
-        notes = []
 
-        action_result = rule.action(raw_crash, processed_crash, notes)
+        action_result = rule.action(crash_data, result)
         assert action_result is True
-        assert processed_crash['signature'] == 'AsyncShutdownTimeout | UNKNOWN'
+        assert result['signature'] == 'AsyncShutdownTimeout | UNKNOWN'
 
-        assert 'Error parsing AsyncShutdownTimeout:' in notes[0]
-        assert 'Expected object or value' in notes[0]
-        assert notes[1] == 'Signature replaced with a Shutdown Timeout signature, was: "foo"'
+        assert 'Error parsing AsyncShutdownTimeout:' in result['notes'][0]
+        assert 'Expected object or value' in result['notes'][0]
+        assert (
+            'Signature replaced with a Shutdown Timeout signature, was: "foo"' in result['notes'][1]
+        )
 
     def test_action_missing_keyerror(self):
         rule = SignatureShutdownTimeout()
 
-        raw_crash = {
-            'AsyncShutdownTimeout': json.dumps({
-                'no': 'phase or condition'
-            })
+        crash_data = {
+            'async_shutdown_timeout': json.dumps({'no': 'phase or condition'})
         }
-        processed_crash = {
-            'signature': 'foo'
+        result = {
+            'signature': 'foo',
+            'notes': []
         }
-        notes = []
 
-        action_result = rule.action(raw_crash, processed_crash, notes)
+        action_result = rule.action(crash_data, result)
         assert action_result is True
-        assert processed_crash['signature'] == 'AsyncShutdownTimeout | UNKNOWN'
+        assert result['signature'] == 'AsyncShutdownTimeout | UNKNOWN'
 
-        assert notes[0] == "Error parsing AsyncShutdownTimeout: 'phase'"
-        assert notes[1] == 'Signature replaced with a Shutdown Timeout signature, was: "foo"'
+        assert result['notes'][0] == "Error parsing AsyncShutdownTimeout: 'phase'"
+        assert (
+            result['notes'][1] ==
+            'Signature replaced with a Shutdown Timeout signature, was: "foo"'
+        )
 
     def test_action_success(self):
         rule = SignatureShutdownTimeout()
 
-        raw_crash = {
-            'AsyncShutdownTimeout': json.dumps({
+        crash_data = {
+            'async_shutdown_timeout': json.dumps({
                 'phase': 'beginning',
                 'conditions': [
                     {'name': 'A'},
@@ -1625,86 +1661,89 @@ class TestSignatureShutdownTimeout:
                 ]
             })
         }
-        processed_crash = {
-            'signature': 'foo'
+        result = {
+            'signature': 'foo',
+            'notes': []
         }
-        notes = []
 
-        action_result = rule.action(raw_crash, processed_crash, notes)
+        action_result = rule.action(crash_data, result)
         assert action_result is True
-
-        assert processed_crash['signature'] == 'AsyncShutdownTimeout | beginning | A,B'
+        assert result['signature'] == 'AsyncShutdownTimeout | beginning | A,B'
         expected = 'Signature replaced with a Shutdown Timeout signature, was: "foo"'
-        assert notes[0] == expected
+        assert result['notes'][0] == expected
 
     def test_action_success_string_conditions(self):
         rule = SignatureShutdownTimeout()
 
-        raw_crash = {
-            'AsyncShutdownTimeout': json.dumps({
+        crash_data = {
+            'async_shutdown_timeout': json.dumps({
                 'phase': 'beginning',
                 'conditions': ['A', 'B', 'C']
             })
         }
-        processed_crash = {
-            'signature': 'foo'
+        result = {
+            'signature': 'foo',
+            'notes': []
         }
-        notes = []
 
-        action_result = rule.action(raw_crash, processed_crash, notes)
+        action_result = rule.action(crash_data, result)
         assert action_result is True
-
-        assert processed_crash['signature'] == 'AsyncShutdownTimeout | beginning | A,B,C'
+        assert result['signature'] == 'AsyncShutdownTimeout | beginning | A,B,C'
         expected = 'Signature replaced with a Shutdown Timeout signature, was: "foo"'
-        assert notes[0] == expected
+        assert result['notes'][0] == expected
 
     def test_action_success_empty_conditions_key(self):
         rule = SignatureShutdownTimeout()
 
-        raw_crash = {
-            'AsyncShutdownTimeout': json.dumps({
+        crash_data = {
+            'async_shutdown_timeout': json.dumps({
                 'phase': 'beginning',
                 'conditions': []
             })
         }
-        processed_crash = {
-            'signature': 'foo'
+        result = {
+            'signature': 'foo',
+            'notes': []
         }
-        notes = []
 
-        action_result = rule.action(raw_crash, processed_crash, notes)
+        action_result = rule.action(crash_data, result)
         assert action_result is True
-
-        assert processed_crash['signature'] == 'AsyncShutdownTimeout | beginning | (none)'
+        assert result['signature'] == 'AsyncShutdownTimeout | beginning | (none)'
         expected = 'Signature replaced with a Shutdown Timeout signature, was: "foo"'
-        assert notes[0] == expected
+        assert result['notes'][0] == expected
 
 
 class TestSignatureIPCMessageName:
 
-    def test_predicate_no_match(self):
+    def test_predicate_no_ipc_message_name(self):
         rule = SignatureIPCMessageName()
+        result = {
+            'signature': '',
+            'notes': []
+        }
+        assert rule.predicate({}, result) is False
 
-        raw_crash = {}
-        predicate_result = rule.predicate(raw_crash, {})
-        assert predicate_result is False
-
-        raw_crash['IPCMessageName'] = ''
-        predicate_result = rule.predicate(raw_crash, {})
-        assert predicate_result is False
+    def test_predicate_empty_string(self):
+        rule = SignatureIPCMessageName()
+        crash_data = {
+            'ipc_message_name': ''
+        }
+        result = {
+            'signature': '',
+            'notes': []
+        }
+        assert rule.predicate(crash_data, result) is False
 
     def test_predicate(self):
         rule = SignatureIPCMessageName()
-
-        raw_crash = {
-            'IPCMessageName': 'foo, bar'
+        crash_data = {
+            'ipc_message_name': 'foo, bar'
         }
-        processed_crash = {
-            'signature': 'fooo::baar'
+        result = {
+            'signature': 'fooo::baar',
+            'notes': []
         }
-
-        predicate_result = rule.predicate(raw_crash, processed_crash)
-        assert predicate_result is True
+        assert rule.predicate(crash_data, result) is True
 
     def test_action_success(self):
         rule = SignatureIPCMessageName()
@@ -1722,33 +1761,48 @@ class TestSignatureIPCMessageName:
 
 class TestSignatureParentIDNotEqualsChildID:
 
-    def test_predicate_no_match(self):
+    def test_predicate_no_moz_crash_reason(self):
         rule = SignatureParentIDNotEqualsChildID()
+        result = {
+            'signature': '',
+            'notes': []
+        }
+        assert rule.predicate({}, result) is False
 
-        raw_crash = {}
-        predicate_result = rule.predicate(raw_crash, {})
-        assert predicate_result is False
-
-        raw_crash['MozCrashReason'] = ''
-        predicate_result = rule.predicate(raw_crash, {})
-        assert predicate_result is False
-
-    def test_success(self):
+    def test_predicate_empty_moz_crash_reason(self):
         rule = SignatureParentIDNotEqualsChildID()
-
-        raw_crash = {
-            'MozCrashReason': 'MOZ_RELEASE_ASSERT(parentBuildID == childBuildID)'
+        crash_data = {
+            'moz_crash_reason': ''
         }
-        processed_crash = {
-            'signature': 'fooo::baar'
+        result = {
+            'signature': '',
+            'notes': []
         }
-        notes = []
+        assert rule.predicate(crash_data, result) is False
 
-        predicate_result = rule.predicate(raw_crash, processed_crash)
-        assert predicate_result is True
+    def test_predicate_match(self):
+        rule = SignatureParentIDNotEqualsChildID()
+        crash_data = {
+            'moz_crash_reason': 'MOZ_RELEASE_ASSERT(parentBuildID == childBuildID)'
+        }
+        result = {
+            'signature': 'fooo::baar',
+            'notes': []
+        }
 
-        action_result = rule.action(raw_crash, processed_crash, notes)
+        assert rule.predicate(crash_data, result) is True
+
+    def test_action(self):
+        rule = SignatureParentIDNotEqualsChildID()
+        crash_data = {
+            'moz_crash_reason': 'MOZ_RELEASE_ASSERT(parentBuildID == childBuildID)'
+        }
+        result = {
+            'signature': 'fooo::baar',
+            'notes': []
+        }
+
+        action_result = rule.action(crash_data, result)
         assert action_result is True
-        assert processed_crash['signature'] == 'parentBuildID != childBuildID'
-        expected = 'Signature replaced with MozCrashAssert, was: "fooo::baar"'
-        assert notes[0] == expected
+        assert result['signature'] == 'parentBuildID != childBuildID'
+        assert result['notes'][0] == 'Signature replaced with MozCrashAssert, was: "fooo::baar"'
