@@ -18,7 +18,7 @@ Installing
 socorro-siggen is available on `PyPI <https://pypi.org>`_. You can install it
 with::
 
-    $ pip install socorro-siggen
+    $ pip install siggen
 
 
 Basic use

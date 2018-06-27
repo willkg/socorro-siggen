@@ -3,3 +3,4 @@ mock
 flake8
 pytest-wholenodeid
 check-manifest
+twine
