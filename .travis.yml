@@ -11,3 +11,4 @@ install:
 script:
 - flake8 siggen/
 - pytest
+- bin/run_cmd_tests.sh
