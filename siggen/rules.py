@@ -653,11 +653,11 @@ class SignatureRunWatchDog(SignatureGenerationRule):
         # artificially when thread 0 gets stuck. So whatever the crashing
         # thread is, we don't care about it and only want to know what was
         # happening in thread 0 when it got stuck.
-        result = super(SignatureRunWatchDog, self).action(crash_data, result)
+        ret = super(SignatureRunWatchDog, self).action(crash_data, result)
         result['signature'] = (
             "shutdownhang | %s" % result['signature']
         )
-        return result
+        return ret
 
 
 class SignatureShutdownTimeout(Rule):

@@ -837,42 +837,6 @@ frames_from_json_dump_with_templates_and_special_case = {
 }
 
 
-sample_crash_data = {
-    'os': 'Windows NT',
-    'threads': [frames_from_json_dump]
-}
-
-sample_json_dump_with_templates = {
-    'json_dump': {
-        'system_info': {
-            'os': 'Windows NT'
-        },
-        'crash_info': {
-            'address': '0x77ad015d',
-            'crashing_thread': 0,
-            'type': 'EXCEPTION_BREAKPOINT'
-        },
-        'crashing_thread': frames_from_json_dump_with_templates,
-        'threads': [frames_from_json_dump_with_templates]
-    }
-}
-
-sample_json_dump_with_templates_and_special_case = {
-    'json_dump': {
-        'system_info': {
-            'os': 'Windows NT'
-        },
-        'crash_info': {
-            'address': '0x77ad015d',
-            'crashing_thread': 0,
-            'type': 'EXCEPTION_BREAKPOINT'
-        },
-        'crashing_thread': frames_from_json_dump_with_templates_and_special_case,
-        'threads': [frames_from_json_dump_with_templates_and_special_case]
-    }
-}
-
-
 class TestSignatureGeneration:
 
     def test_create_frame_list(self):
@@ -952,14 +916,20 @@ class TestSignatureGeneration:
     def test_action_2_with_templates(self):
         sgr = SignatureGenerationRule()
 
-        raw_crash = {}
-        processed_crash = dict(sample_json_dump_with_templates)
-        notes = []
+        crash_data = {
+            'os': 'Windows NT',
+            'crashing_thread': 0,
+            'threads': [frames_from_json_dump_with_templates]
+        }
+        result = {
+            'signature': '',
+            'notes': []
+        }
 
         # the call to be tested
-        assert sgr.action(raw_crash, processed_crash, notes) is True
+        assert sgr.action(crash_data, result) is True
 
-        assert processed_crash['signature'] == 'Alpha<T>::Echo<T>'
+        assert result['signature'] == 'Alpha<T>::Echo<T>'
         expected = (
             'NtWaitForMultipleObjects | Alpha<T>::Echo<T> | '
             'WaitForMultipleObjectsExImplementation | '
@@ -971,21 +941,27 @@ class TestSignatureGeneration:
             'F1315696776________________________________ | '
             'F_1428703866________________________________'
         )
-        assert processed_crash['proto_signature'] == expected
-        assert notes == []
+        assert result['proto_signature'] == expected
+        assert result['notes'] == []
 
     def test_action_2_with_templates_and_special_case(self):
         sgr = SignatureGenerationRule()
 
-        raw_crash = {}
-        processed_crash = dict(sample_json_dump_with_templates_and_special_case)
-        notes = []
+        crash_data = {
+            'os': 'Windows NT',
+            'crashing_thread': 0,
+            'threads': [frames_from_json_dump_with_templates_and_special_case]
+        }
+        result = {
+            'signature': '',
+            'notes': []
+        }
 
         # the call to be tested
-        assert sgr.action(raw_crash, processed_crash, notes) is True
+        assert sgr.action(crash_data, result) is True
 
         expected = '<name omitted> | IPC::ParamTraits<mozilla::net::NetAddr>::Write'
-        assert processed_crash['signature'] == expected
+        assert result['signature'] == expected
         expected = (
             'NtWaitForMultipleObjects | '
             '<name omitted> | '
@@ -998,42 +974,37 @@ class TestSignatureGeneration:
             'F1315696776________________________________ | '
             'F_1428703866________________________________'
         )
-        assert processed_crash['proto_signature'] == expected
-        assert notes == []
+        assert result['proto_signature'] == expected
+        assert result['notes'] == []
 
     def test_action_3(self):
         sgr = SignatureGenerationRule()
 
-        raw_crash = {}
-        processed_crash = {
-            'json_dump': {
-                'crashing_thread': {
-                    'frames': []
-                }
-            }
+        crash_data = {
+            'thread': [[]],
         }
-        processed_crash['frames'] = []
-        notes = []
+        result = {
+            'signature': '',
+            'notes': []
+        }
 
         # the call to be tested
-        assert sgr.action(raw_crash, processed_crash, notes) is True
+        assert sgr.action(crash_data, result) is True
 
-        assert processed_crash['signature'] == 'EMPTY: no crashing thread identified'
-        assert processed_crash['proto_signature'] == ''
+        assert result['signature'] == 'EMPTY: no crashing thread identified'
+        assert 'proto_signature' not in result
         expected = [
             'CSignatureTool: No signature could be created because we do '
             'not know which thread crashed'
         ]
-        assert notes == expected
+        assert result['notes'] == expected
 
     def test_lower_case_modules(self):
         sgr = SignatureGenerationRule()
 
-        # FIXME(willkg): Don't use sample crash data here.
-        raw_crash = {}
-        processed_crash = copy.deepcopy(sample_crash_data)
-        processed_crash['json_dump']['threads'] = [
-            {
+        crash_data = {
+            'os': 'Windows NT',
+            'threads': [{
                 "frames": [
                     {
                         'offset': '0x5e39bf21',
@@ -1055,17 +1026,19 @@ class TestSignatureGeneration:
                         'trust': 'cfi'
                     },
                 ]
-            },
-        ]
-        notes = []
+            }]
+        }
+        result = {
+            'signature': '',
+            'notes': []
+        }
 
         # the call to be tested
-        assert sgr.action(raw_crash, processed_crash, notes) is True
-
-        assert processed_crash['signature'] == 'user2.dll@0x20869'
+        assert sgr.action(crash_data, result) is True
+        assert result['signature'] == 'user2.dll@0x20869'
         expected = '@0x5e39bf21 | @0x5e39bf21 | @0x5e39bf21 | user2.dll@0x20869'
-        assert processed_crash['proto_signature'] == expected
-        assert notes == []
+        assert result['proto_signature'] == expected
+        assert result['notes'] == []
 
 
 class TestOOMSignature:
@@ -1442,21 +1415,26 @@ class TestSignatureWatchDogRule:
     def test_action(self):
         sgr = SignatureRunWatchDog()
 
-        processed_crash = copy.deepcopy(sample_crash_data)
-        # Set a fake signature
-        processed_crash['signature'] = 'foo::bar'
-        notes = []
+        crash_data = {
+            'os': 'Windows NT',
+            'crashing_thread': 0,
+            'threads': [frames_from_json_dump]
+        }
+        result = {
+            'signature': 'foo::bar',
+            'notes': []
+        }
 
         # the call to be tested
-        assert sgr.action({}, processed_crash, notes) is True
+        assert sgr.action(crash_data, result) is True
 
         # Verify the signature has been re-generated based on thread 0.
         expected = (
             'shutdownhang | MsgWaitForMultipleObjects | '
             'F_1152915508__________________________________'
         )
-        assert processed_crash['signature'] == expected
-        assert notes == []
+        assert result['signature'] == expected
+        assert result['notes'] == []
 
 
 class TestSignatureJitCategory:
