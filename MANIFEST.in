@@ -1,5 +1,6 @@
 include LICENSE
 include README.rst
+include HISTORY.rst
 include requirements-dev.txt
 
 recursive-include bin *.sh

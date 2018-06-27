@@ -5,7 +5,8 @@ socorro-siggen
 This is an experimental extraction of the Socorro signature generation code.
 
 :Code:          https://github.com/willkg/socorro-siggen
-:Documentation: Check the README
+:Documentation: Check the ``README.rst`` file
+:Changelog:     Check the ``HISTORY.rst`` file
 :Issue tracker: https://github.com/willkg/socorro-siggen/issues
 :License:       MPLv2
 :Status:        Alpha
@@ -233,3 +234,24 @@ That produces this output::
       "proto_signature": "SomeFunc | SomeOtherFunc",
       "signature": "SomeFunc"
     }
+
+
+Release process
+===============
+
+1. Create branch
+2. Update version and release date in ``siggen/__init__.py``
+3. Update ``HISTORY.rst``
+4. Push the branch, create a PR, review it, merge it
+5. Create a signed tag, push to github::
+
+     git tag -s v0.1.0
+     git push --tags [REMOTE] master
+
+6. Build::
+
+     python setup.py sdist bdist_wheel
+
+7. Upload to PyPI::
+
+     twine upload dist/*
