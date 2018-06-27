@@ -1,0 +1,8 @@
+include LICENSE
+include README.rst
+include requirements-dev.txt
+
+recursive-include bin *.sh
+recursive-include siggen *.rst
+recursive-include siggen *.txt
+
