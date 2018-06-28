@@ -167,10 +167,12 @@ This is the schema for the crash data structure:
       This gets added to the signature if there was an IPC message name in the
       crash.
 
-    - additional_minidumps:     list of strings or None
+    - additional_minidumps:     string or None
 
-      A crash report can contain multiple minidumps. This is the list of
-      minidumps other than the main one that the crash had.
+      A crash report can contain multiple minidumps. This is a comma-delimited
+      list of minidumps other than the main one that the crash had.
+
+      Example: "browser,flash1,flash2,content"
 
     - mdsw_status_string:       string or None (Socorro specific)
 

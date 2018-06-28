@@ -190,11 +190,10 @@ def cmdline():
         # text
         'moz_crash_reason': glom(raw_crash, 'MozCrashReason', default=None),
 
-        # list of text; e.g. ["browser"]
-        'additional_minidumps': glom(raw_crash, 'additional_minisumps', default=[]),
+        # text; comma-delimited e.g. "browser,flash1,flash2"
+        'additional_minidumps': glom(raw_crash, 'additional_minidumps', default=''),
 
         # pull out the original signature if there was one
         'original_signature': glom(processed_crash, 'signature', default='')
     }
-
     print(json.dumps(crash_data, indent=2))
