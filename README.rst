@@ -203,6 +203,7 @@ Example almost minimal, somewhat nonsense ``crash_data.json``::
 
     {
         "os": "Linux",
+        "crashing_thread": 0,
         "threads": [
             {
                 "frames": [
