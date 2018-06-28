@@ -52,145 +52,89 @@ You can use socorro-siggen as a library::
 Crash data schema
 =================
 
-This is the schema for the crash data structure:
+This is the schema for the crash data structure: ::
 
-::
+    {
+        crashing_thread: <int or null>,  // The index of the crashing thread in threads. This defaults to None which indicates there was no crashing thread identified in the crash report.
 
-    Crash data:
+        threads: [  // Optional, list of stack traces for c/c++/rust code
+            {
+                frames: [  // list of frames
+                    {
+                        function: <string>,  // Optional, The name of the function.
+                                             // If this is ``None`` or not in the frame,
+                                             // then signature generation will calculate
+                                             // something using other data in the frame
 
-    - crashing_thread:          int or None
+                        module: <string>,  // name of the module
+                        file: <string>,  // name of the file
+                        line: <int>,  // line in the file
+                        module_offset: <string>,  // offset in hex in the module for this frame
+                        offset: <string>  // offset in hex for this frame
 
-      The index of the crashing thread in threads. This defaults to None
-      which indicates there was no crashing thread identified in the crash
-      report.
+                        // Signature parts are computed using frame data in this order:
 
-    - threads:                  list of CStackTrace or None
+                        //     1. if there's a function (and optionally line)--use that
+                        //     2. if there's a file and a line--use that
+                        //     3. if there's an offset and no module/module_offset--use that
+                        //     4. use module/module_offset
+                    },
+                    ...
+                ],
 
-      This is a list of stack traces for c/c++/rust code.
+                thread_name: <string>,  // Optional, The name of the thread.
+                                        // This isn't used, yet, but might be in the future for debugging purposes
 
-      Each stack trace is a dict with keys:
+                frame_count: <int>  // This is the total number of frames. This isn't used
+            },
+            ...
+        ],
 
-        - frames:               list of frames
+        java_stack_trace: <string>,  // Optional, If the crash is a Java crash, then this will be
+                                     // the Java traceback as a single string. Signature generation
+                                     // will split this string into lines and then extract frame
+                                     // information from it to generate the signature.
 
-          The list of frames in this stack. See below for the frame structure.
+                                     // FIXME(willkg): Write up better description of this
 
-        - thread_name:          string or None
+        oom_allocation_size: <int>,  // Optional, The allocation size that triggered an out-of-memory error.
+                                     // This will get added to the signature if one of the indicator functions
+                                     // appears in the stack of the crashing thread
 
-          The name of the thread. This isn't used, yet, but might be in the
-          future for debugging purposes.
+        abort_message: <string>,  // The abort message for the crash, if there is one.
+                                  // This is added to the beginning of the signature
 
-        - frame_count:          int or None
+        hang_type: <int>,  // A value of 1 here indicates this is a chrome hang and we look at thread 0 for generation
+                           // A value of -1 indicates another kind of hang.
 
-          This is the total number of frames. This isn't used.
+        async_shutdown_timeout: <text>,  // Optional, This is a text field encoded in JSON with "phase" and "conditions" keys
+                                         // FIXME(willkg): Document this structure better.
 
+        jit_category: <string>,  // Optional, If there's a JIT classification in the crash,
+                                 // then that will override the signature
 
-      Each frame is a dict with the following keys:
+        ipc_channel_error: <string>,  // Optional, If there is an IPC channel error, it replaces the signature
 
-        - function:             string
+        ipc_message_name: <string>,  // Optional, This gets added to the signature if there was an
+                                     // IPC message name in the crash
 
-          The name of the function. If this is ``None`` or not in the frame,
-          then signature generation will calculate something using other data in
-          the frame.
+        additional_minidumps: <string>,  // Optional, A crash report can contain multiple minidumps.
+                                         // This is a comma-delimited list of minidumps other than the main one that the crash had
 
-        - module:               string
+                                         // Example: "browser,flash1,flash2,content"
 
-          The name of the module.
+        mdsw_status_string: <string, Soccoro specific>,  // Optional, This is the minidump-stackwalk status string.
+                                                         // This gets generated when the Socorro processor runs the
+                                                         // minidump through minidump-stackwalk. If you're not using
+                                                         // minidump-stackwalk, you can ignore this.
 
-        - file:                 string
+        moz_crash_reason: <string>,  // Optional, This is the MOZ_CRASH_REASON value. This doesn't affect
+                                     // anything unless the value is "MOZ_RELEASE_ASSERT(parentBuildID == childBuildID)".
 
-          The name of the file.
-
-        - line:                 int
-
-          The line in the file.
-
-        - module_offset:        string
-
-          The offset in hex in the module for this frame.
-
-        - offset:               string
-
-          The offset in hex for this frame.
-
-      Signature parts are computed using frame data in this order:
-
-        1. if there's a function (and optionally line)--use that
-        2. if there's a file and a line--use that
-        3. if there's an offset and no module/module_offset--use that
-        4. use module/module_offset
-
-    - java_stack_trace:         string or None
-
-      If the crash is a Java crash, then this will be the Java traceback as a
-      single string. Signature generation will split this string into lines and
-      then extract frame information from it to generate the signature.
-
-      FIXME(willkg): Write up better description of this.
-
-    - oom_allocation_size:      int or None
-
-      The allocation size that triggered an out-of-memory error. This will
-      get added to the signature if one of the indicator functions appears
-      in the stack of the crashing thread.
-
-    - abort_message:            string or None
-
-      The abort message for the crash, if there is one. This is added to the
-      beginning of the signature.
-
-    - hang_type:                int or None
-
-      A value of 1 here indicates this is a chrome hang and we look at thread 0
-      for generation.
-
-      A value of -1 indicates another kind of hang.
-
-      All other values indicate this crash is not a hang at all.
-
-    - async_shutdown_timeout:   text or None
-
-      This is a text field encoded in JSON with "phase" and "conditions" keys.
-
-      FIXME(willkg): Document this structure better.
-
-    - jit_category:             string or None
-
-      If there's a JIT classification in the crash, then that will override the
-      signature.
-
-    - ipc_channel_error:        string or None
-
-      If there is an IPC channel error, it replaces the signature.
-
-    - ipc_message_name:         string or None
-
-      This gets added to the signature if there was an IPC message name in the
-      crash.
-
-    - additional_minidumps:     string or None
-
-      A crash report can contain multiple minidumps. This is a comma-delimited
-      list of minidumps other than the main one that the crash had.
-
-      Example: "browser,flash1,flash2,content"
-
-    - mdsw_status_string:       string or None (Socorro specific)
-
-      This is the minidump-stackwalk status string. This gets generated when the
-      Socorro processor runs the minidump through minidump-stackwalk. If you're
-      not using minidump-stackwalk, you can ignore this.
-
-    - moz_crash_reason:         string or None
-
-      This is the MOZ_CRASH_REASON value. This doesn't affect anything unless
-      the value is "MOZ_RELEASE_ASSERT(parentBuildID == childBuildID)".
-
-    - os:                       string or None
-
-      The name of the operating system. This doesn't affect anything unless the
-      name is "Windows NT" in which case it will lowercase module names when
-      iterating through frames to build the signature.
-
+        os: <string>,  // Optional, The name of the operating system. This doesn't affect anything
+                       // unless the name is "Windows NT" in which case it will lowercase module
+                       // names when iterating through frames to build the signature.
+    }
 
 Missing keys in the structure are treated as ``None``, so you can pass in a
 minimal structure with just the parts you define.
