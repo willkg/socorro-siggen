@@ -154,7 +154,7 @@ def cmdline():
 
         # int or None
         'crashing_thread': glom(
-            processed_crash, 'json_dump.crash_info.crashing_thread', default=0
+            processed_crash, 'json_dump.crash_info.crashing_thread', default=None
         ),
 
         # list of CStackTrace or None
@@ -190,11 +190,10 @@ def cmdline():
         # text
         'moz_crash_reason': glom(raw_crash, 'MozCrashReason', default=None),
 
-        # list of text; e.g. ["browser"]
-        'additional_minidumps': glom(raw_crash, 'additional_minisumps', default=[]),
+        # text; comma-delimited e.g. "browser,flash1,flash2"
+        'additional_minidumps': glom(raw_crash, 'additional_minidumps', default=''),
 
         # pull out the original signature if there was one
         'original_signature': glom(processed_crash, 'signature', default='')
     }
-
     print(json.dumps(crash_data, indent=2))

@@ -58,9 +58,11 @@ This is the schema for the crash data structure:
 
     Crash data:
 
-    - crashing_thread:          int or 0
+    - crashing_thread:          int or None
 
-      The index of the crashing thread in threads. This will default to 0.
+      The index of the crashing thread in threads. This defaults to None
+      which indicates there was no crashing thread identified in the crash
+      report.
 
     - threads:                  list of CStackTrace or None
 
@@ -165,10 +167,12 @@ This is the schema for the crash data structure:
       This gets added to the signature if there was an IPC message name in the
       crash.
 
-    - additional_minidumps:     list of strings or None
+    - additional_minidumps:     string or None
 
-      A crash report can contain multiple minidumps. This is the list of
-      minidumps other than the main one that the crash had.
+      A crash report can contain multiple minidumps. This is a comma-delimited
+      list of minidumps other than the main one that the crash had.
+
+      Example: "browser,flash1,flash2,content"
 
     - mdsw_status_string:       string or None (Socorro specific)
 
