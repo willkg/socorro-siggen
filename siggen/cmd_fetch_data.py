@@ -192,6 +192,9 @@ def cmdline():
 
         # list of text; e.g. ["browser"]
         'additional_minidumps': glom(raw_crash, 'additional_minisumps', default=[]),
+
+        # pull out the original signature if there was one
+        'original_signature': glom(processed_crash, 'signature', default='')
     }
 
     print(json.dumps(crash_data, indent=2))
