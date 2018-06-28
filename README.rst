@@ -58,9 +58,11 @@ This is the schema for the crash data structure:
 
     Crash data:
 
-    - crashing_thread:          int or 0
+    - crashing_thread:          int or None
 
-      The index of the crashing thread in threads. This will default to 0.
+      The index of the crashing thread in threads. This defaults to None
+      which indicates there was no crashing thread identified in the crash
+      report.
 
     - threads:                  list of CStackTrace or None
 

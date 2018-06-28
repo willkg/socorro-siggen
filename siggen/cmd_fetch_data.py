@@ -154,7 +154,7 @@ def cmdline():
 
         # int or None
         'crashing_thread': glom(
-            processed_crash, 'json_dump.crash_info.crashing_thread', default=0
+            processed_crash, 'json_dump.crash_info.crashing_thread', default=None
         ),
 
         # list of CStackTrace or None

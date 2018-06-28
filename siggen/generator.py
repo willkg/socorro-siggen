@@ -2,8 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import logging
-
 from siggen.rules import (
     SignatureGenerationRule,
     StackwalkerErrorSignatureRule,
@@ -36,9 +34,6 @@ DEFAULT_PIPELINE = [
     SigFixWhitespace(),
     SigTruncate(),
 ]
-
-
-logger = logging.getLogger(__name__)
 
 
 class SignatureGenerator:
@@ -77,7 +72,6 @@ class SignatureGenerator:
                         )
 
             except Exception as exc:
-                logger.exception('Error running %r', rule)
                 result['notes'].append('Rule %s failed: %s' % (rule.__class__.__name__, exc))
 
         return result

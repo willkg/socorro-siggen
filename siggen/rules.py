@@ -3,7 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 from itertools import islice
-import logging
 import re
 
 from glom import glom
@@ -15,9 +14,6 @@ from .utils import drop_unicode
 
 SIGNATURE_MAX_LENGTH = 255
 MAXIMUM_FRAMES_TO_CONSIDER = 40
-
-
-logger = logging.getLogger(__name__)
 
 
 class Rule(object):
@@ -440,7 +436,7 @@ class SignatureGenerationRule(Rule):
         return frame_signatures_list
 
     def _get_crashing_thread(self, crash_data):
-        return glom(crash_data, 'json_dump.crash_info.crashing_thread', default=None)
+        return crash_data.get('crashing_thread', 0)
 
     def action(self, crash_data, result):
         # If this is a Java crash, then generate a Java signature
@@ -454,16 +450,24 @@ class SignatureGenerationRule(Rule):
             return True
 
         try:
+            # First, we need to figure out which thread to look at. If it's a
+            # chrome hang (1), then use thread 0. Otherwise, use the crashing
+            # thread specified in the crash data.
             if crash_data.get('hang_type', None) == 1:
-                # Force the signature to come from thread 0
                 crashing_thread = 0
             else:
-                crashing_thread = crash_data.get('crashing_thread', 0)
+                crashing_thread = self._get_crashing_thread(crash_data)
 
-            signature_list = self._create_frame_list(
-                glom(crash_data, 'threads.%d' % crashing_thread, default={}),
-                crash_data.get('os') == 'Windows NT'
-            )
+            # If we have a thread to look at, pull the frames for that.
+            # Otherwise we don't have frames to use.
+            if crashing_thread is not None:
+                signature_list = self._create_frame_list(
+                    glom(crash_data, 'threads.%d' % crashing_thread, default={}),
+                    crash_data.get('os') == 'Windows NT'
+                )
+
+            else:
+                signature_list = []
 
         except (KeyError, IndexError) as exc:
             signature_notes.append('No crashing frames found because of %s' % exc)
