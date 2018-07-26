@@ -3,28 +3,18 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
+import importlib
 import json
 import re
 
 import mock
 import pytest
 
-from siggen.rules import (
-    AbortSignature,
-    CSignatureTool,
-    JavaSignatureTool,
-    OOMSignature,
-    StackwalkerErrorSignatureRule,
-    SignatureIPCChannelError,
-    SignatureGenerationRule,
-    SignatureJitCategory,
-    SignatureRunWatchDog,
-    SigFixWhitespace,
-    SigTruncate,
-    SignatureShutdownTimeout,
-    SignatureIPCMessageName,
-    SignatureParentIDNotEqualsChildID,
-)
+# NOTE(willkg): We do this so that we can extract signature generation into its
+# own namespace as an external library. This allows the tests to run if it's in
+# "siggen" or "socorro.signature".
+base_module = '.'.join(__name__.split('.')[:-2])
+rules = importlib.import_module(base_module + '.rules')
 
 
 class TestCSignatureTool:
@@ -38,13 +28,13 @@ class TestCSignatureTool:
         ss=('sentinel', ('sentinel2', lambda x: 'ff' in x)),
     ):
 
-        with mock.patch('siggen.rules.siglists_utils') as mocked_siglists:
+        with mock.patch(base_module + '.rules.siglists_utils') as mocked_siglists:
             mocked_siglists.IRRELEVANT_SIGNATURE_RE = ig
             mocked_siglists.PREFIX_SIGNATURE_RE = pr
             mocked_siglists.SIGNATURES_WITH_LINE_NUMBERS_RE = si
             mocked_siglists.TRIM_DLL_SIGNATURE_RE = td
             mocked_siglists.SIGNATURE_SENTINELS = ss
-            return CSignatureTool()
+            return rules.CSignatureTool()
 
     def test_c_config_tool_init(self):
         """test_C_config_tool_init: constructor test"""
@@ -267,14 +257,14 @@ class TestCSignatureTool:
 
 class TestJavaSignatureTool:
     def test_bad_stack(self):
-        j = JavaSignatureTool()
+        j = rules.JavaSignatureTool()
         java_stack_trace = 17
         sig, notes = j.generate(java_stack_trace, delimiter=': ')
         assert sig == "EMPTY: Java stack trace not in expected format"
         assert notes == ['JavaSignatureTool: stack trace not in expected format']
 
     def test_basic_stack_frame_with_line_number(self):
-        j = JavaSignatureTool()
+        j = rules.JavaSignatureTool()
         java_stack_trace = (
             'SomeJavaException: totally made up  \n'
             'at org.mozilla.lars.myInvention(larsFile.java:666)'
@@ -285,7 +275,7 @@ class TestJavaSignatureTool:
         assert notes == []
 
     def test_basic_stack_frame(self):
-        j = JavaSignatureTool()
+        j = rules.JavaSignatureTool()
         java_stack_trace = (
             'SomeJavaException: totally made up  \n'
             'at org.mozilla.lars.myInvention(larsFile.java)'
@@ -296,7 +286,7 @@ class TestJavaSignatureTool:
         assert notes == []
 
     def test_long_exception_description(self):
-        j = JavaSignatureTool()
+        j = rules.JavaSignatureTool()
         java_stack_trace = (
             '   SomeJavaException: %s \nat org.mozilla.lars.myInvention(larsFile.java)' %
             ('t' * 1000)
@@ -308,7 +298,7 @@ class TestJavaSignatureTool:
         assert notes == expected
 
     def test_long_exception_description_with_line_number(self):
-        j = JavaSignatureTool()
+        j = rules.JavaSignatureTool()
         java_stack_trace = (
             '   SomeJavaException: %s  \nat org.mozilla.lars.myInvention(larsFile.java:1234)' %
             ('t' * 1000)
@@ -320,7 +310,7 @@ class TestJavaSignatureTool:
         assert notes == expected
 
     def test_no_description(self):
-        j = JavaSignatureTool()
+        j = rules.JavaSignatureTool()
         java_stack_trace = (
             '   SomeJavaException\n'
             'at org.mozilla.lars.myInvention(larsFile.java:1234)'
@@ -332,7 +322,7 @@ class TestJavaSignatureTool:
         assert notes == e
 
     def test_frame_with_line_ending_but_missing_second_line(self):
-        j = JavaSignatureTool()
+        j = rules.JavaSignatureTool()
         java_stack_trace = 'SomeJavaException: totally made up  \n'
         sig, notes = j.generate(java_stack_trace, delimiter=': ')
         e = 'SomeJavaException: totally made up'
@@ -341,7 +331,7 @@ class TestJavaSignatureTool:
         assert notes == e
 
     def test_frame_missing_second_line(self):
-        j = JavaSignatureTool()
+        j = rules.JavaSignatureTool()
         java_stack_trace = 'SomeJavaException: totally made up  '
         sig, notes = j.generate(java_stack_trace, delimiter=': ')
         e = 'SomeJavaException: totally made up'
@@ -350,7 +340,7 @@ class TestJavaSignatureTool:
         assert notes == e
 
     def test_frame_with_leading_whitespace(self):
-        j = JavaSignatureTool()
+        j = rules.JavaSignatureTool()
         java_stack_trace = (
             '   SomeJavaException: totally made up  \n'
             'at org.mozilla.lars.myInvention('
@@ -366,7 +356,7 @@ class TestJavaSignatureTool:
         # In general addresses of the form ``@xxxxxxxx`` are to be replaced
         # with the literal ``<addr>``, however in this case, the hex address is
         # not in the expected location and should therefore be left alone
-        j = JavaSignatureTool()
+        j = rules.JavaSignatureTool()
         java_stack_trace = ('SomeJavaException: totally made up  \n'
                             'at org.mozilla.lars.myInvention('
                             'larsFile.java:@abef1234)')
@@ -378,7 +368,7 @@ class TestJavaSignatureTool:
         assert notes == []
 
     def test_replace_address(self):
-        j = JavaSignatureTool()
+        j = rules.JavaSignatureTool()
         java_stack_trace = """
 java.lang.IllegalArgumentException: Given view not a child of android.widget.AbsoluteLayout@4054b560
 \tat android.view.ViewGroup.updateViewLayout(ViewGroup.java:1968)
@@ -408,7 +398,7 @@ java.lang.IllegalArgumentException: Given view not a child of android.widget.Abs
         assert notes == []
 
     def test_replace_address_with_trailing_text(self):
-        j = JavaSignatureTool()
+        j = rules.JavaSignatureTool()
         java_stack_trace = """
 android.view.WindowManager$BadTokenException: Unable to add window -- token android.os.BinderProxy@406237c0 is not valid; is your activity running?
 \tat android.view.ViewRoot.setView(ViewRoot.java:533)
@@ -437,7 +427,7 @@ android.view.WindowManager$BadTokenException: Unable to add window -- token andr
         assert notes == []
 
     def test_replace_address_trailing_whitespace(self):
-        j = JavaSignatureTool()
+        j = rules.JavaSignatureTool()
         java_stack_trace = """
 java.lang.IllegalArgumentException: Receiver not registered: org.mozilla.gecko.GeckoNetworkManager@405afea8
 \tat android.app.LoadedApk.forgetReceiverDispatcher(LoadedApk.java:610)
@@ -839,7 +829,7 @@ frames_from_json_dump_with_templates_and_special_case = {
 class TestSignatureGeneration:
 
     def test_create_frame_list(self):
-        sgr = SignatureGenerationRule()
+        sgr = rules.SignatureGenerationRule()
         frame_signatures_list = sgr._create_frame_list(frames_from_json_dump)
         expected = [
             'NtWaitForMultipleObjects',
@@ -858,7 +848,7 @@ class TestSignatureGeneration:
         assert frames_from_json_dump['frames'][0]['normalized'] == expected[0]
 
     def test_java_stack_trace(self):
-        sgr = SignatureGenerationRule()
+        sgr = rules.SignatureGenerationRule()
 
         crash_data = {
             'java_stack_trace': (
@@ -882,7 +872,7 @@ class TestSignatureGeneration:
         assert signature['notes'] == expected
 
     def test_c_stack_trace(self):
-        sgr = SignatureGenerationRule()
+        sgr = rules.SignatureGenerationRule()
 
         crash_data = {
             'os': 'Windows NT',
@@ -913,7 +903,7 @@ class TestSignatureGeneration:
         assert result['notes'] == []
 
     def test_action_2_with_templates(self):
-        sgr = SignatureGenerationRule()
+        sgr = rules.SignatureGenerationRule()
 
         crash_data = {
             'os': 'Windows NT',
@@ -944,7 +934,7 @@ class TestSignatureGeneration:
         assert result['notes'] == []
 
     def test_action_2_with_templates_and_special_case(self):
-        sgr = SignatureGenerationRule()
+        sgr = rules.SignatureGenerationRule()
 
         crash_data = {
             'os': 'Windows NT',
@@ -977,7 +967,7 @@ class TestSignatureGeneration:
         assert result['notes'] == []
 
     def test_action_3(self):
-        sgr = SignatureGenerationRule()
+        sgr = rules.SignatureGenerationRule()
 
         crash_data = {
             'thread': [[]],
@@ -999,7 +989,7 @@ class TestSignatureGeneration:
         assert result['notes'] == expected
 
     def test_lower_case_modules(self):
-        sgr = SignatureGenerationRule()
+        sgr = rules.SignatureGenerationRule()
 
         crash_data = {
             'os': 'Windows NT',
@@ -1046,7 +1036,7 @@ class TestOOMSignature:
             'signature': 'hello',
             'notes': []
         }
-        rule = OOMSignature()
+        rule = rules.OOMSignature()
         assert rule.predicate({}, result) is False
 
     def test_predicate(self):
@@ -1057,7 +1047,7 @@ class TestOOMSignature:
             'signature': 'hello',
             'notes': []
         }
-        rule = OOMSignature()
+        rule = rules.OOMSignature()
         assert rule.predicate(crash_data, result) is True
 
     def test_predicate_signature_fragment_1(self):
@@ -1066,7 +1056,7 @@ class TestOOMSignature:
             'signature': 'this | is | a | NS_ABORT_OOM | signature',
             'notes': []
         }
-        rule = OOMSignature()
+        rule = rules.OOMSignature()
         assert rule.predicate(crash_data, result) is True
 
     def test_predicate_signature_fragment_2(self):
@@ -1075,7 +1065,7 @@ class TestOOMSignature:
             'signature': 'mozalloc_handle_oom | this | is | bad',
             'notes': []
         }
-        rule = OOMSignature()
+        rule = rules.OOMSignature()
         assert rule.predicate(crash_data, result) is True
 
     def test_predicate_signature_fragment_3(self):
@@ -1084,7 +1074,7 @@ class TestOOMSignature:
             'signature': 'CrashAtUnhandlableOOM',
             'notes': []
         }
-        rule = OOMSignature()
+        rule = rules.OOMSignature()
         assert rule.predicate(crash_data, result) is True
 
     def test_action_success(self):
@@ -1093,7 +1083,7 @@ class TestOOMSignature:
             'signature': 'hello',
             'notes': []
         }
-        rule = OOMSignature()
+        rule = rules.OOMSignature()
         action_result = rule.action(crash_data, result)
 
         assert action_result is True
@@ -1107,7 +1097,7 @@ class TestOOMSignature:
             'signature': 'hello',
             'notes': []
         }
-        rule = OOMSignature()
+        rule = rules.OOMSignature()
         action_result = rule.action(crash_data, result)
 
         assert action_result is True
@@ -1122,7 +1112,7 @@ class TestOOMSignature:
             'notes': []
         }
 
-        rule = OOMSignature()
+        rule = rules.OOMSignature()
         action_result = rule.action(crash_data, result)
 
         assert action_result is True
@@ -1132,7 +1122,7 @@ class TestOOMSignature:
 class TestAbortSignature:
 
     def test_predicate(self):
-        rule = AbortSignature()
+        rule = rules.AbortSignature()
         crash_data = {
             'abort_message': 'something'
         }
@@ -1143,7 +1133,7 @@ class TestAbortSignature:
         assert rule.predicate(crash_data, result) is True
 
     def test_predicate_no_match(self):
-        rule = AbortSignature()
+        rule = rules.AbortSignature()
         # No AbortMessage
         crash_data = {}
         result = {
@@ -1152,7 +1142,7 @@ class TestAbortSignature:
         assert rule.predicate(crash_data, result) is False
 
     def test_predicate_empty_message(self):
-        rule = AbortSignature()
+        rule = rules.AbortSignature()
         crash_data = {
             'abort_message': ''
         }
@@ -1163,7 +1153,7 @@ class TestAbortSignature:
         assert rule.predicate(crash_data, result) is False
 
     def test_action_success(self):
-        rule = AbortSignature()
+        rule = rules.AbortSignature()
         crash_data = {
             'abort_message': 'unknown'
         }
@@ -1176,7 +1166,7 @@ class TestAbortSignature:
         assert result['signature'] == 'Abort | unknown | hello'
 
     def test_action_success_long_message(self):
-        rule = AbortSignature()
+        rule = rules.AbortSignature()
 
         crash_data = {
             'abort_message': 'a' * 81
@@ -1230,7 +1220,7 @@ class TestAbortSignature:
         ),
     ])
     def test_action_success_remove_unwanted_parts(self, abort_msg, expected):
-        rule = AbortSignature()
+        rule = rules.AbortSignature()
 
         crash_data = {
             'abort_message': abort_msg
@@ -1246,7 +1236,7 @@ class TestAbortSignature:
 
     def test_action_non_ascii_abort_message(self):
         # Non-ascii characters are removed from abort messages
-        rule = AbortSignature()
+        rule = rules.AbortSignature()
         crash_data = {
             'abort_message': '\u018a unknown'
         }
@@ -1262,7 +1252,7 @@ class TestAbortSignature:
 class TestSigFixWhitespace:
 
     def test_predicate_no_match(self):
-        rule = SigFixWhitespace()
+        rule = rules.SigFixWhitespace()
 
         result = {
             'signature': '',
@@ -1274,7 +1264,7 @@ class TestSigFixWhitespace:
         assert rule.predicate({}, result) is False
 
     def test_predicate(self):
-        rule = SigFixWhitespace()
+        rule = rules.SigFixWhitespace()
         result = {
             'signature': 'fooo::baar',
             'notes': []
@@ -1296,7 +1286,7 @@ class TestSigFixWhitespace:
         ('all  |  good', 'all | good'),
     ])
     def test_whitespace_fixing(self, signature, expected):
-        rule = SigFixWhitespace()
+        rule = rules.SigFixWhitespace()
         result = {
             'signature': signature,
             'notes': []
@@ -1309,7 +1299,7 @@ class TestSigFixWhitespace:
 class TestSigTruncate:
 
     def test_predicate_no_match(self):
-        rule = SigTruncate()
+        rule = rules.SigTruncate()
         result = {
             'signature': '0' * 100,
             'notes': []
@@ -1317,7 +1307,7 @@ class TestSigTruncate:
         assert rule.predicate({}, result) is False
 
     def test_predicate(self):
-        rule = SigTruncate()
+        rule = rules.SigTruncate()
         result = {
             'signature': '9' * 256,
             'notes': []
@@ -1325,7 +1315,7 @@ class TestSigTruncate:
         assert rule.predicate({}, result) is True
 
     def test_action_success(self):
-        rule = SigTruncate()
+        rule = rules.SigTruncate()
         result = {
             'signature': '9' * 256,
             'notes': []
@@ -1339,7 +1329,7 @@ class TestSigTruncate:
 class TestStackwalkerErrorSignatureRule:
 
     def test_predicate_no_match_signature(self):
-        rule = StackwalkerErrorSignatureRule()
+        rule = rules.StackwalkerErrorSignatureRule()
         result = {
             'signature': '0' * 100,
             'notes': []
@@ -1347,7 +1337,7 @@ class TestStackwalkerErrorSignatureRule:
         assert rule.predicate({}, result) is False
 
     def test_predicate_no_match_missing_mdsw_status_string(self):
-        rule = StackwalkerErrorSignatureRule()
+        rule = rules.StackwalkerErrorSignatureRule()
         result = {
             'signature': 'EMPTY: like my soul',
             'notes': []
@@ -1355,7 +1345,7 @@ class TestStackwalkerErrorSignatureRule:
         assert rule.predicate({}, result) is False
 
     def test_predicate(self):
-        rule = StackwalkerErrorSignatureRule()
+        rule = rules.StackwalkerErrorSignatureRule()
         crash_data = {
             'mdsw_status_string': 'catastrophic stackwalker failure'
         }
@@ -1366,7 +1356,7 @@ class TestStackwalkerErrorSignatureRule:
         assert rule.predicate(crash_data, result) is True
 
     def test_action_success(self):
-        rule = StackwalkerErrorSignatureRule()
+        rule = rules.StackwalkerErrorSignatureRule()
         crash_data = {
             'mdsw_status_string': 'catastrophic stackwalker failure'
         }
@@ -1383,15 +1373,15 @@ class TestStackwalkerErrorSignatureRule:
 class TestSignatureWatchDogRule:
 
     def test_instantiation(self):
-        srwd = SignatureRunWatchDog()
+        srwd = rules.SignatureRunWatchDog()
 
-        assert isinstance(srwd.c_signature_tool, CSignatureTool)
-        assert isinstance(srwd.java_signature_tool, JavaSignatureTool)
+        assert isinstance(srwd.c_signature_tool, rules.CSignatureTool)
+        assert isinstance(srwd.java_signature_tool, rules.JavaSignatureTool)
 
         assert srwd._get_crashing_thread({}) == 0
 
     def test_predicate(self):
-        srwd = SignatureRunWatchDog()
+        srwd = rules.SignatureRunWatchDog()
 
         result = {
             'signature': "I'm not real",
@@ -1412,7 +1402,7 @@ class TestSignatureWatchDogRule:
         assert srwd.predicate({}, result) is True
 
     def test_action(self):
-        sgr = SignatureRunWatchDog()
+        sgr = rules.SignatureRunWatchDog()
 
         crash_data = {
             'os': 'Windows NT',
@@ -1439,7 +1429,7 @@ class TestSignatureWatchDogRule:
 class TestSignatureJitCategory:
 
     def test_predicate_no_match(self):
-        rule = SignatureJitCategory()
+        rule = rules.SignatureJitCategory()
 
         crash_data = {}
         result = {
@@ -1459,7 +1449,7 @@ class TestSignatureJitCategory:
         assert rule.predicate(crash_data, result) is False
 
     def test_predicate(self):
-        rule = SignatureJitCategory()
+        rule = rules.SignatureJitCategory()
 
         crash_data = {
             'jit_category': 'JIT Crash'
@@ -1472,7 +1462,7 @@ class TestSignatureJitCategory:
         assert rule.predicate(crash_data, result) is True
 
     def test_action_success(self):
-        rule = SignatureJitCategory()
+        rule = rules.SignatureJitCategory()
 
         crash_data = {
             'jit_category': 'JIT Crash'
@@ -1494,7 +1484,7 @@ class TestSignatureJitCategory:
 class TestSignatureIPCChannelError:
 
     def test_predicate_no_match(self):
-        rule = SignatureIPCChannelError()
+        rule = rules.SignatureIPCChannelError()
 
         result = {
             'signature': '',
@@ -1513,7 +1503,7 @@ class TestSignatureIPCChannelError:
         assert rule.predicate(crash_data, result) is False
 
     def test_predicate(self):
-        rule = SignatureIPCChannelError()
+        rule = rules.SignatureIPCChannelError()
 
         crash_data = {
             'ipc_channel_error': 'foo, bar'
@@ -1526,7 +1516,7 @@ class TestSignatureIPCChannelError:
         assert rule.predicate(crash_data, result) is True
 
     def test_action_success(self):
-        rule = SignatureIPCChannelError()
+        rule = rules.SignatureIPCChannelError()
 
         crash_data = {
             'ipc_channel_error': 'ipc' * 50
@@ -1565,7 +1555,7 @@ class TestSignatureIPCChannelError:
 class TestSignatureShutdownTimeout:
 
     def test_predicate_no_match(self):
-        rule = SignatureShutdownTimeout()
+        rule = rules.SignatureShutdownTimeout()
         result = {
             'signature': '',
             'notes': []
@@ -1573,7 +1563,7 @@ class TestSignatureShutdownTimeout:
         assert rule.predicate({}, result) is False
 
     def test_predicate(self):
-        rule = SignatureShutdownTimeout()
+        rule = rules.SignatureShutdownTimeout()
 
         crash_data = {
             'async_shutdown_timeout': '{"foo": "bar"}'
@@ -1585,7 +1575,7 @@ class TestSignatureShutdownTimeout:
         assert rule.predicate(crash_data, result) is True
 
     def test_action_missing_valueerror(self):
-        rule = SignatureShutdownTimeout()
+        rule = rules.SignatureShutdownTimeout()
 
         crash_data = {
             'async_shutdown_timeout': '{{{{'
@@ -1606,7 +1596,7 @@ class TestSignatureShutdownTimeout:
         )
 
     def test_action_missing_keyerror(self):
-        rule = SignatureShutdownTimeout()
+        rule = rules.SignatureShutdownTimeout()
 
         crash_data = {
             'async_shutdown_timeout': json.dumps({'no': 'phase or condition'})
@@ -1627,7 +1617,7 @@ class TestSignatureShutdownTimeout:
         )
 
     def test_action_success(self):
-        rule = SignatureShutdownTimeout()
+        rule = rules.SignatureShutdownTimeout()
 
         crash_data = {
             'async_shutdown_timeout': json.dumps({
@@ -1650,7 +1640,7 @@ class TestSignatureShutdownTimeout:
         assert result['notes'][0] == expected
 
     def test_action_success_string_conditions(self):
-        rule = SignatureShutdownTimeout()
+        rule = rules.SignatureShutdownTimeout()
 
         crash_data = {
             'async_shutdown_timeout': json.dumps({
@@ -1670,7 +1660,7 @@ class TestSignatureShutdownTimeout:
         assert result['notes'][0] == expected
 
     def test_action_success_empty_conditions_key(self):
-        rule = SignatureShutdownTimeout()
+        rule = rules.SignatureShutdownTimeout()
 
         crash_data = {
             'async_shutdown_timeout': json.dumps({
@@ -1693,7 +1683,7 @@ class TestSignatureShutdownTimeout:
 class TestSignatureIPCMessageName:
 
     def test_predicate_no_ipc_message_name(self):
-        rule = SignatureIPCMessageName()
+        rule = rules.SignatureIPCMessageName()
         result = {
             'signature': '',
             'notes': []
@@ -1701,7 +1691,7 @@ class TestSignatureIPCMessageName:
         assert rule.predicate({}, result) is False
 
     def test_predicate_empty_string(self):
-        rule = SignatureIPCMessageName()
+        rule = rules.SignatureIPCMessageName()
         crash_data = {
             'ipc_message_name': ''
         }
@@ -1712,7 +1702,7 @@ class TestSignatureIPCMessageName:
         assert rule.predicate(crash_data, result) is False
 
     def test_predicate(self):
-        rule = SignatureIPCMessageName()
+        rule = rules.SignatureIPCMessageName()
         crash_data = {
             'ipc_message_name': 'foo, bar'
         }
@@ -1723,7 +1713,7 @@ class TestSignatureIPCMessageName:
         assert rule.predicate(crash_data, result) is True
 
     def test_action_success(self):
-        rule = SignatureIPCMessageName()
+        rule = rules.SignatureIPCMessageName()
         crash_data = {
             'ipc_message_name': 'foo, bar'
         }
@@ -1739,7 +1729,7 @@ class TestSignatureIPCMessageName:
 class TestSignatureParentIDNotEqualsChildID:
 
     def test_predicate_no_moz_crash_reason(self):
-        rule = SignatureParentIDNotEqualsChildID()
+        rule = rules.SignatureParentIDNotEqualsChildID()
         result = {
             'signature': '',
             'notes': []
@@ -1747,7 +1737,7 @@ class TestSignatureParentIDNotEqualsChildID:
         assert rule.predicate({}, result) is False
 
     def test_predicate_empty_moz_crash_reason(self):
-        rule = SignatureParentIDNotEqualsChildID()
+        rule = rules.SignatureParentIDNotEqualsChildID()
         crash_data = {
             'moz_crash_reason': ''
         }
@@ -1758,7 +1748,7 @@ class TestSignatureParentIDNotEqualsChildID:
         assert rule.predicate(crash_data, result) is False
 
     def test_predicate_match(self):
-        rule = SignatureParentIDNotEqualsChildID()
+        rule = rules.SignatureParentIDNotEqualsChildID()
         crash_data = {
             'moz_crash_reason': 'MOZ_RELEASE_ASSERT(parentBuildID == childBuildID)'
         }
@@ -1770,7 +1760,7 @@ class TestSignatureParentIDNotEqualsChildID:
         assert rule.predicate(crash_data, result) is True
 
     def test_action(self):
-        rule = SignatureParentIDNotEqualsChildID()
+        rule = rules.SignatureParentIDNotEqualsChildID()
         crash_data = {
             'moz_crash_reason': 'MOZ_RELEASE_ASSERT(parentBuildID == childBuildID)'
         }

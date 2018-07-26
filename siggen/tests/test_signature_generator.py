@@ -2,13 +2,19 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from siggen.generator import SignatureGenerator
+import importlib
+
+# NOTE(willkg): We do this so that we can extract signature generation into its
+# own namespace as an external library. This allows the tests to run if it's in
+# "siggen" or "socorro.signature".
+base_module = '.'.join(__name__.split('.')[:-2])
+generator = importlib.import_module(base_module + '.generator')
 
 
 class TestSignatureGenerator:
     def test_empty_dicts(self):
-        generator = SignatureGenerator()
-        ret = generator.generate({})
+        generator_obj = generator.SignatureGenerator()
+        ret = generator_obj.generate({})
 
         # NOTE(willkg): This is what the current pipeline yields. If any of those parts change, this
         # might change, too. The point of this test is that we can pass in empty dicts and the
@@ -27,8 +33,8 @@ class TestSignatureGenerator:
         class BadRule(object):
             pass
 
-        generator = SignatureGenerator(pipeline=[BadRule()])
-        ret = generator.generate({})
+        generator_obj = generator.SignatureGenerator(pipeline=[BadRule()])
+        ret = generator_obj.generate({})
 
         expected = {
             'notes': [

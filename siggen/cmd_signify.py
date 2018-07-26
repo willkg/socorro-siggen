@@ -8,7 +8,7 @@ import argparse
 import json
 import sys
 
-from siggen.generator import SignatureGenerator
+from .generator import SignatureGenerator
 
 
 DESCRIPTION = """
