@@ -2,6 +2,21 @@
 History
 =======
 
+0.1.2 (July 26th, 2018)
+=======================
+
+Bug fixes:
+
+* Generalized code so it can be ignorant of parent module. This will make it
+  easier to co-exist with Socorro's fork.
+
+* Update signature lists with changes in Socorro over the last month.
+
+* Cleanup README to make the schema easier to read. (Thank you, Ben!)
+
+* Fix bugs and typos in examples.
+
+
 0.1.1 (June 28th, 2018)
 =======================
 
