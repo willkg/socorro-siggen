@@ -14,15 +14,19 @@ app_process@0x
 AppleIntelHD3000GraphicsGLDriver@
 core\.odex@0x
 core::panicking::
+CrashReporter::TerminateHandler
 CrashStatsLogForwarder::CrashAction
+__cxa_throw
 _CxxThrowException
 dalvik-heap
 dalvik-jit-code-cache
 dalvik-LinearAlloc
 dalvik-mark-stack
 data@app@org\.mozilla\.f.*-\d\.apk@classes\.dex@0x
+exp2
 .*FNODOBFM
 framework\.odex@0x
+__fixunsdfsi
 GetLCIDFromLangListNodeWithLICCheck
 gfxPlatform::GetPlatform
 google_breakpad::CrashGenerationClient::RequestDumpForException
@@ -67,7 +71,9 @@ NS_ProcessNextEvent
 (Nt|Zw)?WaitForMultipleObjects(Ex)?
 NtWaitForAlertByThreadId
 nvmap@0x
+objc_begin_catch
 org\.mozilla\.f.*-\d\.apk@0x
+panic_abort::
 PR_WaitCondVar
 RaiseException
 rtc::FatalMessage
@@ -80,6 +86,7 @@ SleepConditionVariableCS
 SleepConditionVariableSRW
 std::_Atomic_fetch_add_4
 std::panicking::
+std::__terminate
 system@framework@.*\.jar@classes\.dex@0x
 ___TERMINATING_DUE_TO_UNCAUGHT_EXCEPTION___
 WaitForSingleObjectExImplementation

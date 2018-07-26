@@ -29,7 +29,6 @@ core::option::expect_failed
 core::result::unwrap_failed<T>
 core::str::slice_error_fail
 CrashInJS
-CrashReporter::TerminateHandler
 CreateFileMappingA
 __delayLoadHelper2
 dlmalloc
@@ -158,6 +157,7 @@ nsThread::Shutdown
 NtUser
 objc_exception_throw
 objc_msgSend
+objc_release
 operator new
 <.*>::operator()
 pages_commit
@@ -216,8 +216,6 @@ SSL_
 std::_Allocate
 std::_Hash<T>::
 std::list<.*>::
-std::panicking::begin_panic<.*>
-std::panicking::rust_panic_with_hook
 std::collections::hash::map::
 stdext::hash_map<T>::
 strcat
