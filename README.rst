@@ -37,7 +37,7 @@ Alternatively::
 
 You can use socorro-siggen as a library::
 
-    from siggen import SignatureGenerator
+    from siggen.generator import SignatureGenerator
 
     generator = SignatureGenerator()
 
