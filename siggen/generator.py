@@ -2,6 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import sys
+
 from .rules import (
     SignatureGenerationRule,
     StackwalkerErrorSignatureRule,
@@ -37,8 +39,17 @@ DEFAULT_PIPELINE = [
 
 
 class SignatureGenerator:
-    def __init__(self, pipeline=None, debug=False):
+    def __init__(self, pipeline=None, error_handler=None, debug=False):
+        """
+        :arg pipeline: list of rules to use for signature generation
+        :arg error_handler: error handling function with signature
+            ``fun(signature_data, exc_info, extra)``
+        :arg debug: whether or not to be in debug mode which shows verbose
+            output about what happend
+
+        """
         self.pipeline = pipeline or list(DEFAULT_PIPELINE)
+        self.error_handler = error_handler
         self.debug = debug
 
     def generate(self, signature_data):
@@ -72,6 +83,13 @@ class SignatureGenerator:
                         )
 
             except Exception as exc:
+                if self.error_handler:
+                    self.error_handler(
+                        signature_data,
+                        exc_info=sys.exc_info(),
+                        extra={'rule': rule.__class__.__name__}
+                    )
+
                 result['notes'].append('Rule %s failed: %s' % (rule.__class__.__name__, exc))
 
         return result
