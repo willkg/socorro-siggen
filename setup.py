@@ -25,6 +25,7 @@ def get_version():
 install_requires = [
     'glom',
     'requests',
+    'six',
     'ujson',
 ]
 
