@@ -9,7 +9,7 @@ from glom import glom
 import ujson
 
 from . import siglists_utils
-from .utils import drop_unicode
+from .utils import drop_bad_characters
 
 
 SIGNATURE_MAX_LENGTH = 255
@@ -568,7 +568,7 @@ class AbortSignature(Rule):
                 if end_paren != -1:
                     abort_message = abort_message[:open_paren] + abort_message[end_paren + 1:]
 
-        abort_message = drop_unicode(abort_message).strip()
+        abort_message = drop_bad_characters(abort_message).strip()
 
         if len(abort_message) > 80:
             abort_message = abort_message[:77] + '...'

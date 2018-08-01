@@ -4,6 +4,7 @@
 
 
 from glom import glom
+import six
 
 
 def int_or_none(data):
@@ -87,17 +88,24 @@ def convert_to_crash_data(raw_crash, processed_crash):
     return crash_data
 
 
-def drop_unicode(text):
-    """Takes a text and drops all unicode characters
+ALLOWED_CHARS = [chr(c) for c in range(32, 127)]
+
+
+def drop_bad_characters(text):
+    """Takes a text and drops all non-printable and non-ascii characters
 
     :arg str/unicode text: the text to fix
 
-    :returns: text with all unicode characters dropped
+    :returns: text with all non-printable and non-ascii characters dropped
 
     """
-    if isinstance(text, str):
-        # Convert any str to a unicode so that we can convert it back and drop any non-ascii
-        # characters
-        text = text.decode('unicode_escape')
+    if six.PY2:
+        if isinstance(text, str):
+            # Convert to unicode to handle encoded sequences
+            text = text.decode('unicode_escape')
+        # Convert to a Python 2 str and drop any non-ascii characters
+        text = text.encode('ascii', 'ignore')
 
-    return text.encode('ascii', 'ignore')
+    # Strip all non-ascii and non-printable characters
+    text = ''.join([c for c in text if c in ALLOWED_CHARS])
+    return text
