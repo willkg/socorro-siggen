@@ -8,13 +8,10 @@ import six
 
 
 def int_or_none(data):
-    if data:
-        try:
-            return int(data)
-        except ValueError:
-            printerr('int_or_none: value is not an int: %r' % data)
-            return None
-    return data
+    try:
+        return int(data)
+    except (TypeError, ValueError):
+        return None
 
 
 def convert_to_crash_data(raw_crash, processed_crash):
@@ -32,7 +29,7 @@ def convert_to_crash_data(raw_crash, processed_crash):
     # We want to generate fresh signatures, so we remove the "normalized" field
     # from stack frames from the processed crash because this is essentially
     # cached data from previous processing
-    for thread in processed_crash['json_dump'].get('threads', []):
+    for thread in glom(processed_crash, 'json_dump.threads', default=[]):
         for frame in thread.get('frames', []):
             if 'normalized' in frame:
                 del frame['normalized']
@@ -88,15 +85,17 @@ def convert_to_crash_data(raw_crash, processed_crash):
     return crash_data
 
 
+#: List of allowed characters: ascii, printable, and non-whitespace except space
 ALLOWED_CHARS = [chr(c) for c in range(32, 127)]
 
 
 def drop_bad_characters(text):
-    """Takes a text and drops all non-printable and non-ascii characters
+    """Takes a text and drops all non-printable and non-ascii characters and
+    also any whitespace characters that aren't space.
 
     :arg str/unicode text: the text to fix
 
-    :returns: text with all non-printable and non-ascii characters dropped
+    :returns: text with all bad characters dropped
 
     """
     if six.PY2:
