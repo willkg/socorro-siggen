@@ -16,7 +16,7 @@ Given a signature data structure as JSON via stdin, generates the signature.
 """
 
 
-def cmdline():
+def main():
     """Takes crash data via stdin and generates a Socorro signature"""
     parser = argparse.ArgumentParser(description=DESCRIPTION)
     parser.add_argument(

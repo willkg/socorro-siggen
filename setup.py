@@ -25,6 +25,7 @@ def get_version():
 install_requires = [
     'glom',
     'requests',
+    'six',
     'ujson',
 ]
 
@@ -43,8 +44,9 @@ setup(
     install_requires=install_requires,
     entry_points="""
         [console_scripts]
-        signify=siggen.cmd_signify:cmdline
-        fetch-data=siggen.cmd_fetch_data:cmdline
+        signify=siggen.cmd_signify:main
+        fetch-data=siggen.cmd_fetch_data:main
+        signature=siggen.cmd_signature:main
     """,
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',

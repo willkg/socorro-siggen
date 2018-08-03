@@ -5,3 +5,5 @@ dist
 build
 .cache
 .pytest_cache
+.tox
+.python-version
