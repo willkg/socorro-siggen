@@ -4,6 +4,10 @@
 
 import importlib
 
+import mock
+
+from . import WHATEVER
+
 # NOTE(willkg): We do this so that we can extract signature generation into its
 # own namespace as an external library. This allows the tests to run if it's in
 # "siggen" or "socorro.signature".
@@ -44,3 +48,28 @@ class TestSignatureGenerator:
         }
 
         assert ret == expected
+
+    def test_error_handler(self):
+        exc_value = Exception('Cough')
+
+        class BadRule(object):
+            def predicate(self, crash_data, result):
+                raise exc_value
+
+        error_handler = mock.MagicMock()
+
+        generator_obj = generator.SignatureGenerator(
+            pipeline=[BadRule()], error_handler=error_handler
+        )
+        generator_obj.generate({'uuid': 'ou812'})
+
+        # Make sure error_handler was called with right extra
+        assert (
+            error_handler.call_args_list == [
+                mock.call(
+                    {'uuid': 'ou812'},
+                    exc_info=(Exception, exc_value, WHATEVER),
+                    extra={'rule': 'BadRule'}
+                )
+            ]
+        )

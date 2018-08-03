@@ -70,7 +70,7 @@ def fetch(endpoint, crash_id, api_token=None):
     return requests.get(API_URL + endpoint, **kwargs)
 
 
-def cmdline():
+def main():
     """Takes a crash id, pulls down data from Socorro, generates signature data"""
     parser = argparse.ArgumentParser(
         formatter_class=WrappedTextHelpFormatter,
