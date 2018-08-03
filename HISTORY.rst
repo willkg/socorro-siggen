@@ -2,6 +2,21 @@
 History
 =======
 
+0.1.3 (August 3rd, 2018)
+========================
+
+Bug fixes:
+
+* Unified siggen fork with Socorro signature generator. Siggen is now an
+  extracted library from Socorro's signature generator.
+
+* Add tests for signature generator error handler.
+
+* Some minor changes for Python 3 support.
+
+* Other minor fixes.
+
+
 0.1.2 (July 26th, 2018)
 =======================
 
