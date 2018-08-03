@@ -2,6 +2,7 @@ include LICENSE
 include README.rst
 include HISTORY.rst
 include requirements-dev.txt
+include tox.ini
 include siggen/socorro_sha.txt
 
 recursive-include bin *.sh
