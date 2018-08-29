@@ -53,68 +53,176 @@ class TestCSignatureTool:
         assert fixup_space.pattern == s.fixup_space.pattern
         assert fixup_comma.pattern == s.fixup_comma.pattern
 
-    def test_normalize_with_collapse_args(self):
+    def test_normalize_frame(self):
         """test_normalize: bunch of variations"""
         s = self.setup_config_c_sig_tool()
         a = [
-            (('module', 'fn', 'source', '23', '0xFFF'), 'fn'),
-            (('module', 'fnNeedNumber', 's', '23', '0xFFF'),
-             'fnNeedNumber:23'),
-            (('module', 'f( *s)', 's', '23', '0xFFF'), 'f'),
-            (('module', 'f( &s)', 's', '23', '0xFFF'), 'f'),
-            (('module', 'f( *s , &n)', 's', '23', '0xFFF'), 'f'),
-            # this next one looks like a bug to me, but perhaps the situation
-            # never comes up
-            # (('module', 'f(  *s , &n)', 's', '23', '0xFFF'), 'f(*s, &n)'),
-            (('module', 'f3(s,t,u)', 's', '23', '0xFFF'), 'f3'),
+            (
+                ('module', '', 'source/', '23', '0xFFF'),
+                'source#23'
+            ),
+            (
+                ('module', '', 'source\\', '23', '0xFFF'),
+                'source#23'
+            ),
+            (
+                ('module', '', '/a/b/c/source', '23', '0xFFF'),
+                'source#23'
+            ),
+            (
+                ('module', '', '\\a\\b\\c\\source', '23', '0xFFF'),
+                'source#23'
+            ),
+            (
+                ('module', '', '\\a\\b\\c\\source', '23', '0xFFF'),
+                'source#23'
+            ),
+            (
+                ('module', '', '\\a\\b\\c\\source', '', '0xFFF'),
+                'module@0xFFF'
+            ),
+            (
+                ('module', '', '', '23', '0xFFF'),
+                'module@0xFFF'
+            ),
+            (
+                ('module', '', '', '', '0xFFF'),
+                'module@0xFFF'
+            ),
+            (
+                (None, '', '', '', '0xFFF'),
+                '@0xFFF'
+            ),
+
+            # Make sure frame normalization uses the right function: normalize
+            # Rust frame (has a Rust fingerprint)
             (
                 (
                     'module',
-                    '::(anonymous namespace)::f3(s,t,u)',
-                    's',
+                    'expect_failed::h7f635057bfba806a',
+                    'hg:hg.mozilla.org/a/b:servio/wrapper.rs:44444444444',
                     '23',
                     '0xFFF'
                 ),
-                '::(anonymous namespace)::f3'
+                'expect_failed'
             ),
-            (
-                (
-                    'module',
-                    'operator()(s,t,u)',
-                    's',
-                    '23',
-                    '0xFFF'
-                ),
-                'operator()'
-            ),
-            (
-                (
-                    'module',
-                    'Alpha<Bravo<Charlie>, Delta>::Echo<Foxtrot>',
-                    's',
-                    '23',
-                    '0xFFF'
-                ),
-                'Alpha<T>::Echo<T>'
-            ),
-            (('module', 'f<3>(s,t,u)', 's', '23', '0xFFF'), 'f<T>'),
-            (('module', '', 'source/', '23', '0xFFF'), 'source#23'),
-            (('module', '', 'source\\', '23', '0xFFF'), 'source#23'),
-            (('module', '', '/a/b/c/source', '23', '0xFFF'), 'source#23'),
-            (('module', '', '\\a\\b\\c\\source', '23', '0xFFF'), 'source#23'),
-            (('module', '', '\\a\\b\\c\\source', '23', '0xFFF'), 'source#23'),
-            (('module', '', '\\a\\b\\c\\source', '', '0xFFF'), 'module@0xFFF'),
-            (('module', '', '', '23', '0xFFF'), 'module@0xFFF'),
-            (('module', '', '', '', '0xFFF'), 'module@0xFFF'),
-            ((None, '', '', '', '0xFFF'), '@0xFFF'),
-            (('module', 'expect_failed::h7f635057bfba806a', '', '', ''),
-             'expect_failed'),
-            (('module', 'expect_failed::h7f6350::blah', '', '', ''),
-             'expect_failed::h7f6350::blah'),
         ]
         for args, e in a:
-            r = s.normalize_signature(*args)
+            r = s.normalize_frame(*args)
             assert e == r
+
+    @pytest.mark.parametrize('function, line, expected', [
+        # Verify function and line number handling
+        (
+            'fn', '23',
+            'fn'
+        ),
+        (
+            'fnNeedNumber', '23',
+            'fnNeedNumber:23'
+        ),
+        # Remove function arguments
+        (
+            'f( *s)', '23',
+            'f'
+        ),
+        (
+            'f( &s)', '23',
+            'f'
+        ),
+        (
+            'f( *s , &n)', '23',
+            'f'
+        ),
+        (
+            'f3(s,t,u)', '23',
+            'f3'
+        ),
+        (
+            'operator()(s,t,u)', '23',
+            'operator()'
+        ),
+        (
+            '::(anonymous namespace)::f3(s,t,u)', '23',
+            '::(anonymous namespace)::f3'
+        ),
+        (
+            'mozilla::layers::D3D11YCbCrImage::GetAsSourceSurface()', '23',
+            'mozilla::layers::D3D11YCbCrImage::GetAsSourceSurface'
+        ),
+        (
+            'mozilla::layers::BasicImageLayer::Paint(mozilla::gfx::DrawTarget*, mozilla::gfx::PointTyped<mozilla::gfx::UnknownUnits, float> const&, mozilla::layers::Layer*)', '23',  # noqa
+            'mozilla::layers::BasicImageLayer::Paint'
+        ),
+        (
+            'void nsDocumentViewer::DestroyPresShell()', '23',
+            'nsDocumentViewer::DestroyPresShell'
+        ),
+        (
+            'bool CCGraphBuilder::BuildGraph(class js::SliceBudget& const)', '23',
+            'CCGraphBuilder::BuildGraph'
+        ),
+
+        # Handle converting types to generic
+        (
+            'f<3>(s,t,u)', '23',
+            'f<T>'
+        ),
+        (
+            'Alpha<Bravo<Charlie>, Delta>::Echo<Foxtrot>', '23',
+            'Alpha<T>::Echo<T>'
+        ),
+        (
+            'thread_start<unsigned int (__cdecl*)(void* __ptr64)>', '23',
+            'thread_start<T>'
+        ),
+
+        # Handle prefixes and return types
+        (
+            'class JSObject* DoCallback<JSObject*>(class JS::CallbackTracer*, class JSObject**, const char*)', '23',  # noqa
+            'DoCallback<T>'
+        ),
+
+        # Drop "const" at end
+        (
+            'JSObject::allocKindForTenure const', '23',
+            'JSObject::allocKindForTenure'
+        )
+    ])
+    def test_normalize_cpp_function(self, function, line, expected):
+        """Test normalization for cpp functions"""
+        s = self.setup_config_c_sig_tool()
+        assert s.normalize_cpp_function(function, line) == expected
+
+    @pytest.mark.parametrize('function, line, expected', [
+        # Verify removal of fingerprints
+        (
+            'expect_failed::h7f635057bfba806a', '23',
+            'expect_failed'
+        ),
+        (
+            'expect_failed::h7f6350::blah', '23',
+            'expect_failed::h7f6350::blah'
+        ),
+        # Handle prefixes, return types, types, and traits
+        (
+            'static void servo_arc::Arc<style::gecko_properties::ComputedValues>::drop_slow<style::gecko_properties::ComputedValues>()', '23',  # noqa
+            'servo_arc::Arc<T>::drop_slow<T>'
+        ),
+        (
+            'static void core::ptr::drop_in_place<style::stylist::CascadeData>(struct style::stylist::CascadeData*)', '23',  # noqa
+            'core::ptr::drop_in_place<T>'
+        ),
+        # Handle trait methods by not collapsing them
+        (
+            '<rayon_core::job::HeapJob<BODY> as rayon_core::job::Job>::execute', '23',
+            '<rayon_core::job::HeapJob<BODY> as rayon_core::job::Job>::execute'
+        ),
+    ])
+    def test_normalize_rust_function(self, function, line, expected):
+        """Test normalization for Rust functions"""
+        s = self.setup_config_c_sig_tool()
+        assert s.normalize_rust_function(function, line) == expected
 
     def test_generate_1(self):
         """test_generate_1: simple"""
@@ -212,23 +320,6 @@ class TestCSignatureTool:
         a[22] = 'ff'
         sig, notes = s.generate(a)
         assert sig == 'f | e | d | i'
-
-    def test_specifiers_and_return_types(self):
-        """prefix and irrelevant should match ignoring specifiers and return types"""
-        generator = self.setup_config_c_sig_tool(
-            # irrelevant
-            ig=['ignored'],
-            # prefix
-            pr=['pre1', 'pre2'],
-        )
-        source_list = (
-            'static void ignored',
-            'pre1',
-            'static bool pre2',
-            'foo'
-        )
-        sig, notes = generator.generate(source_list)
-        assert sig == 'pre1 | static bool pre2 | foo'
 
     def test_generate_with_merged_dll(self):
         generator = self.setup_config_c_sig_tool(

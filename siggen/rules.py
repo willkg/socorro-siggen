@@ -6,10 +6,16 @@ from itertools import islice
 import re
 
 from glom import glom
+import six
 import ujson
 
 from . import siglists_utils
-from .utils import drop_bad_characters
+from .utils import (
+    collapse,
+    drop_bad_characters,
+    drop_prefix_and_return_type,
+    parse_source_file,
+)
 
 
 SIGNATURE_MAX_LENGTH = 255
@@ -73,9 +79,11 @@ class SignatureTool(object):
 
 
 class CSignatureTool(SignatureTool):
-    """This is the class for signature generation tools that work on breakpad C/C++
-    stacks. It provides a method to normalize signatures and then defines its
-    own '_do_generate' method.
+    """Generates signature from C/C++/Rust stacks.
+
+    This is the class for signature generation tools that work on breakpad
+    C/C++ stacks. It normalizes frames and then runs them through the siglists
+    to determine which frames should be part of the signature.
 
     """
 
@@ -107,64 +115,90 @@ class CSignatureTool(SignatureTool):
         self.fixup_comma = re.compile(r',(?! )')
         self.fixup_hash = re.compile(r'::h[0-9a-fA-F]+$')
 
-    @staticmethod
-    def _is_exception(exception_list, remaining_original_line, line_up_to_current_position):
-        for an_exception in exception_list:
-            if remaining_original_line.startswith(an_exception):
-                return True
-            if line_up_to_current_position.endswith(an_exception):
-                return True
-        return False
+    def normalize_rust_function(self, function, line):
+        """Normalizes a single rust frame with a function"""
+        # Drop the prefix and return type if there is any
+        function = drop_prefix_and_return_type(function)
 
-    def _collapse(
-        self,
-        function_signature_str,
-        open_string,
-        replacement_open_string,
-        close_string,
-        replacement_close_string,
-        exception_substring_list=[],
-    ):
-        """this method takes a string representing a C/C++ function signature
-        and replaces anything between to possibly nested delimiters
+        # Collapse types
+        function = collapse(
+            function,
+            open_string='<',
+            close_string='>',
+            replacement='<T>',
+            exceptions=(' as ',)
+        )
 
-        :arg list exception_substring_list: list of exceptions that shouldn't collapse
+        # Collapse arguments
+        if self.collapse_arguments:
+            function = collapse(
+                function,
+                open_string='(',
+                close_string=')',
+                replacement=''
+            )
 
-        """
-        target_counter = 0
-        collapsed_list = []
-        exception_mode = False
+        if self.signatures_with_line_numbers_re.match(function):
+            function = "%s:%s" % (function, line)
 
-        def append_if_not_in_collapse_mode(a_character):
-            if not target_counter:
-                collapsed_list.append(a_character)
+        # Remove spaces before all stars, ampersands, and commas
+        function = self.fixup_space.sub('', function)
 
-        for index, a_character in enumerate(function_signature_str):
-            if a_character == open_string:
-                if self._is_exception(
-                    exception_substring_list,
-                    function_signature_str[index + 1:],
-                    function_signature_str[:index]
-                ):
-                    exception_mode = True
-                    append_if_not_in_collapse_mode(a_character)
-                    continue
-                append_if_not_in_collapse_mode(replacement_open_string)
-                target_counter += 1
-            elif a_character == close_string:
-                if exception_mode:
-                    append_if_not_in_collapse_mode(a_character)
-                    exception_mode = False
-                else:
-                    target_counter -= 1
-                    append_if_not_in_collapse_mode(replacement_close_string)
-            else:
-                append_if_not_in_collapse_mode(a_character)
+        # Ensure a space after commas
+        function = self.fixup_comma.sub(', ', function)
 
-        edited_function = ''.join(collapsed_list)
-        return edited_function
+        # Remove rust-generated uniqueness hashes
+        function = self.fixup_hash.sub('', function)
 
-    def normalize_signature(
+        return function
+
+    def normalize_cpp_function(self, function, line):
+        """Normalizes a single cpp frame with a function"""
+        # If the function ends in "const", drop that
+        if function.endswith(' const'):
+            function = function[:-6]
+
+        # Drop the prefix and return type if there is any
+        function = drop_prefix_and_return_type(function)
+
+        # Collapse types
+        function = collapse(
+            function,
+            open_string='<',
+            close_string='>',
+            replacement='<T>',
+            exceptions=('name omitted', 'IPC::ParamTraits')
+        )
+
+        # Collapse arguments
+        if self.collapse_arguments:
+            function = collapse(
+                function,
+                open_string='(',
+                close_string=')',
+                replacement='',
+                exceptions=('anonymous namespace', 'operator')
+            )
+        # Remove PGO cold block labels like "[clone .cold.222]". bug #1397926
+        if 'clone .cold' in function:
+            function = collapse(
+                function,
+                open_string='[',
+                close_string=']',
+                replacement=''
+            )
+        if self.signatures_with_line_numbers_re.match(function):
+            function = "%s:%s" % (function, line)
+
+        # Remove spaces before all stars, ampersands, and commas
+        function = self.fixup_space.sub('', function)
+
+        # Ensure a space after commas
+        function = self.fixup_comma.sub(', ', function)
+
+        return function
+
+    def normalize_frame(
         self,
         module=None,
         function=None,
@@ -175,7 +209,7 @@ class CSignatureTool(SignatureTool):
         normalized=None,
         **kwargs  # eat any extra kwargs passed in
     ):
-        """Normalizes a single frame into a signature part
+        """Normalizes a single frame
 
         Returns a structured conglomeration of the input parameters to serve as
         a signature. The parameter names of this function reflect the exact
@@ -191,43 +225,20 @@ class CSignatureTool(SignatureTool):
         if normalized is not None:
             return normalized
 
-        # If there's a function (and optionally line), use that
         if function:
-            function = self._collapse(
-                function,
-                '<',
-                '<',
-                '>',
-                'T>',
-                ('name omitted', 'IPC::ParamTraits')
+            # If there's a filename and it ends in .rs, then normalize using
+            # Rust rules
+            if file and (parse_source_file(file) or '').endswith('.rs'):
+                return self.normalize_rust_function(
+                    function=function,
+                    line=line
+                )
+
+            # Otherwise normalize it with C/C++ rules
+            return self.normalize_cpp_function(
+                function=function,
+                line=line
             )
-            if self.collapse_arguments:
-                function = self._collapse(
-                    function,
-                    '(',
-                    '',
-                    ')',
-                    '',
-                    ('anonymous namespace', 'operator')
-                )
-            if 'clone .cold' in function:
-                # Remove PGO cold block labels like "[clone .cold.222]". bug #1397926
-                function = self._collapse(
-                    function,
-                    '[',
-                    '',
-                    ']',
-                    ''
-                )
-            if self.signatures_with_line_numbers_re.match(function):
-                function = "%s:%s" % (function, line)
-            # Remove spaces before all stars, ampersands, and commas
-            function = self.fixup_space.sub('', function)
-            # Ensure a space after commas
-            function = self.fixup_comma.sub(', ', function)
-            # Remove rust-generated uniqueness hashes
-            function = self.fixup_hash.sub('', function)
-            return function
 
         # If there's a file and line number, use that
         if file and line:
@@ -269,16 +280,12 @@ class CSignatureTool(SignatureTool):
         if sentinel_locations:
             source_list = source_list[min(sentinel_locations):]
 
-        # Get all the relevant frame signatures.
+        # Get all the relevant frame signatures. Note that these function signatures
+        # have already been normalized at this point.
         new_signature_list = []
         for a_signature in source_list:
-            # We want to match against the function signature or any of the parts of the
-            # signature in the case where there are specifiers and return types.
-            a_signature_parts = a_signature.split() + [a_signature]
-
-            # If one of the parts of the function signature matches the
-            # irrelevant signatures regex, skip to the next frame.
-            if any(self.irrelevant_signature_re.match(part) for part in a_signature_parts):
+            # If the signature matches the irrelevant signatures regex, skip to the next frame.
+            if self.irrelevant_signature_re.match(a_signature):
                 continue
 
             # If the signature matches the trim dll signatures regex, rewrite it to remove all but
@@ -293,10 +300,9 @@ class CSignatureTool(SignatureTool):
 
             new_signature_list.append(a_signature)
 
-            # If none of the parts of the function signature signature matches
-            # the prefix signatures regex, then it is the last one we add to
-            # the list.
-            if not any(self.prefix_signature_re.match(part) for part in a_signature_parts):
+            # If the signature does not match the prefix signatures regex, then it is the last
+            # one we add to the list.
+            if not self.prefix_signature_re.match(a_signature):
                 break
 
         # Add a special marker for hang crash reports.
@@ -414,7 +420,33 @@ class JavaSignatureTool(SignatureTool):
 
 
 class SignatureGenerationRule(Rule):
+    """Generates a signature based on stack frames.
 
+    For Java crashes, this generates a basic signature using stack frames.
+
+    For C/C++/Rust crashes, this generates a more robust signature using
+    normalized versions of stack frames augmented by the contents of the
+    signature lists.
+
+    Rough signature list rules (there are more details in the siglists README):
+
+    1. Walk the frames looking for a "signature sentinel" which becomes the
+       first item in the signature.
+    2. Continue walking frames.
+
+       1. If the frame is in the "irrelevant" list, ignore it and
+          continue.
+       2. If the frame is in the "prefix" list, add it to the signature
+          and continue.
+       3. If the frame isn't in either list, stop walking frames.
+
+    3. Signature is generated by joining those frames with " | " between
+       them.
+
+    This rule also generates the proto_signature which is the complete list
+    of normalized frames.
+
+    """
     def __init__(self):
         super(SignatureGenerationRule, self).__init__()
         self.java_signature_tool = JavaSignatureTool()
@@ -429,10 +461,9 @@ class SignatureGenerationRule(Rule):
             if make_modules_lower_case and 'module' in a_frame:
                 a_frame['module'] = a_frame['module'].lower()
 
-            normalized_signature = self.c_signature_tool.normalize_signature(**a_frame)
-            if 'normalized' not in a_frame:
-                a_frame['normalized'] = normalized_signature
-            frame_signatures_list.append(normalized_signature)
+            normalized_frame = self.c_signature_tool.normalize_frame(**a_frame)
+            a_frame['normalized'] = normalized_frame
+            frame_signatures_list.append(normalized_frame)
         return frame_signatures_list
 
     def _get_crashing_thread(self, crash_data):
@@ -488,9 +519,11 @@ class SignatureGenerationRule(Rule):
 
 
 class OOMSignature(Rule):
-    """To satisfy Bug 1007530, this rule will modify the signature to
-    tag OOM (out of memory) crashes"""
+    """Prepends ``OOM | <size>`` to signatures for OOM crashes.
 
+    See bug #1007530.
+
+    """
     signature_fragments = (
         'NS_ABORT_OOM',
         'mozalloc_handle_oom',
@@ -528,7 +561,7 @@ class OOMSignature(Rule):
 
 
 class AbortSignature(Rule):
-    """Adds abort message data to the beginning of the signature
+    """Prepends abort message to signature.
 
     See bug #803779.
 
@@ -578,7 +611,7 @@ class AbortSignature(Rule):
 
 
 class SigFixWhitespace(Rule):
-    """Fix whitespace in signatures
+    """Fix whitespace in signatures.
 
     This does the following:
 
@@ -592,7 +625,7 @@ class SigFixWhitespace(Rule):
     CONSECUTIVE_WHITESPACE_RE = re.compile('\s\s+')
 
     def predicate(self, crash_data, result):
-        return isinstance(result.get('signature'), basestring)
+        return isinstance(result.get('signature'), six.string_types)
 
     def action(self, crash_data, result):
         sig = result['signature']
@@ -611,7 +644,7 @@ class SigFixWhitespace(Rule):
 
 
 class SigTruncate(Rule):
-    """Truncates signatures down to SIGNATURE_MAX_LENGTH characters"""
+    """Truncates signatures down to SIGNATURE_MAX_LENGTH characters."""
 
     def predicate(self, crash_data, result):
         return len(result['signature']) > SIGNATURE_MAX_LENGTH
@@ -624,7 +657,7 @@ class SigTruncate(Rule):
 
 
 class StackwalkerErrorSignatureRule(Rule):
-    """ensure that the signature contains the stackwalker error message"""
+    """Appends minidump-stackwalker error to signature."""
 
     def predicate(self, crash_data, result):
         return bool(
@@ -641,7 +674,7 @@ class StackwalkerErrorSignatureRule(Rule):
 
 
 class SignatureRunWatchDog(SignatureGenerationRule):
-    """ensure that the signature contains the stackwalker error message"""
+    """Prepends "shutdownhang" to signature for shutdown hang crashes."""
 
     def predicate(self, crash_data, result):
         return 'RunWatchdog' in result['signature']
@@ -665,8 +698,7 @@ class SignatureRunWatchDog(SignatureGenerationRule):
 
 
 class SignatureShutdownTimeout(Rule):
-    """replaces the signature if there is a shutdown timeout message in the
-    crash"""
+    """Replaces signature with async_shutdown_timeout message."""
 
     def predicate(self, crash_data, result):
         return bool(crash_data.get('async_shutdown_timeout'))
@@ -704,7 +736,7 @@ class SignatureShutdownTimeout(Rule):
 
 
 class SignatureJitCategory(Rule):
-    """replaces the signature if there is a JIT classification in the crash"""
+    """Replaces signature with JIT classification."""
 
     def predicate(self, crash_data, result):
         return bool(crash_data.get('jit_category'))
@@ -719,7 +751,7 @@ class SignatureJitCategory(Rule):
 
 
 class SignatureIPCChannelError(Rule):
-    """replaces the signature if there is a IPC channel error in the crash"""
+    """Replaces the signature with IPC channel error."""
 
     def predicate(self, crash_data, result):
         return bool(crash_data.get('ipc_channel_error'))
@@ -741,7 +773,7 @@ class SignatureIPCChannelError(Rule):
 
 
 class SignatureIPCMessageName(Rule):
-    """augments the signature if there is a IPC message name in the crash"""
+    """Appends ipc_message_name to signature."""
 
     def predicate(self, crash_data, result):
         return bool(crash_data.get('ipc_message_name'))
@@ -755,7 +787,7 @@ class SignatureIPCMessageName(Rule):
 
 
 class SignatureParentIDNotEqualsChildID(Rule):
-    """Stomp on the signature if MozCrashReason is parentBuildID != childBuildID
+    """Stomp on the signature if MozCrashReason is ``parentBuildID != childBuildID``.
 
     In the case where the assertion fails, then the parent buildid and the child buildid are
     different. This causes a lot of strangeness particularly in symbolification, so the signatures
