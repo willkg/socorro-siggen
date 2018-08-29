@@ -2,6 +2,14 @@
 History
 =======
 
+0.2.1 (in development)
+======================
+
+Bug fixes:
+
+* Add support for Python 3.4, 3.5, and 3.6.
+
+
 0.2.0 (August 29th, 2018)
 =========================
 
