@@ -6,7 +6,6 @@ import os
 import re
 
 from pkg_resources import resource_stream
-import six
 
 
 # This is a hack because sentinels can be a tuple, with the second item being
@@ -43,10 +42,7 @@ def _get_file_content(source):
     lines = []
     with resource_stream(__name__, filepath) as f:
         for i, line in enumerate(f):
-            line = line.strip()
-            if six.PY3:
-                line = line.decode('utf-8', 'strict')
-
+            line = line.decode('utf-8', 'strict').strip()
             if not line or line.startswith('#'):
                 continue
 
@@ -75,4 +71,3 @@ SIGNATURE_SENTINELS = _get_file_content('signature_sentinels')
 SIGNATURES_WITH_LINE_NUMBERS_RE = _get_file_content(
     'signatures_with_line_numbers_re'
 )
-TRIM_DLL_SIGNATURE_RE = _get_file_content('trim_dll_signature_re')

@@ -2,8 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import print_function
-
 import argparse
 import importlib
 import re
@@ -27,7 +25,7 @@ def indent(text, prefix):
     return text.strip()
 
 
-LEAD_WHITESPACE = re.compile('^[ \t]*')
+LEAD_WHITESPACE = re.compile(r'^[ \t]*')
 
 
 def dedent_docstring(text):
