@@ -242,6 +242,24 @@ def test_collapse(function, expected):
     (
         'void geckoservo::glue::Servo_MaybeGCRuleTree(struct style::gecko_bindings::bindings::RawServoStyleSet *)',  # noqa
         'geckoservo::glue::Servo_MaybeGCRuleTree(struct style::gecko_bindings::bindings::RawServoStyleSet *)'  # noqa
+    ),
+    # Handle whitespace between function and parenthesized arguments and [clone .cold.xxx] correctly
+    (
+        '[thunk]:CShellItem::QueryInterface`adjustor{12}\' (_GUID const&, void**)',
+        '[thunk]:CShellItem::QueryInterface`adjustor{12}\' (_GUID const&, void**)'
+    ),
+    (
+        'nsXPConnect::InitStatics() [clone .cold.638]',
+        'nsXPConnect::InitStatics() [clone .cold.638]'
+    ),
+    (
+        'js::AssertObjectIsSavedFrameOrWrapper(JSContext*, JS::Handle<JSObject*>) [clone .isra.234] [clone .cold.687]',  # noqa
+        'js::AssertObjectIsSavedFrameOrWrapper(JSContext*, JS::Handle<JSObject*>) [clone .isra.234] [clone .cold.687]'  # noqa
+    ),
+    # Handle an aberrant case
+    (
+        '(anonymous namespace)::EnqueueTask(already_AddRefed<nsIRunnable>, int)',
+        '(anonymous namespace)::EnqueueTask(already_AddRefed<nsIRunnable>, int)'
     )
 ])
 def test_drop_prefix_and_return_type(function, expected):

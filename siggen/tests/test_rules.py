@@ -15,19 +15,18 @@ import pytest
 # "siggen" or "socorro.signature".
 base_module = '.'.join(__name__.split('.')[:-2])
 rules = importlib.import_module(base_module + '.rules')
+generator = importlib.import_module(base_module + '.generator')
 
 
 class TestCSignatureTool:
-
     @staticmethod
     def setup_config_c_sig_tool(
         ig=['ignored1'],
         pr=['pre1', 'pre2'],
         si=['fnNeedNumber'],
-        td=['foo32\.dll.*'],
+        td=[r'foo32\.dll.*'],
         ss=('sentinel', ('sentinel2', lambda x: 'ff' in x)),
     ):
-
         with mock.patch(base_module + '.rules.siglists_utils') as mocked_siglists:
             mocked_siglists.IRRELEVANT_SIGNATURE_RE = ig
             mocked_siglists.PREFIX_SIGNATURE_RE = pr
@@ -38,9 +37,9 @@ class TestCSignatureTool:
 
     def test_c_config_tool_init(self):
         """test_C_config_tool_init: constructor test"""
-        exp_irrelevant_signature_re = re.compile('ignored1')
-        exp_prefix_signature_re = re.compile('pre1|pre2')
-        exp_signatures_with_line_numbers_re = re.compile('fnNeedNumber')
+        exp_irrelevant_signature_re = re.compile(r'ignored1')
+        exp_prefix_signature_re = re.compile(r'pre1|pre2')
+        exp_signatures_with_line_numbers_re = re.compile(r'fnNeedNumber')
         fixup_space = re.compile(r' (?=[\*&,])')
         fixup_comma = re.compile(r',(?! )')
 
@@ -182,12 +181,22 @@ class TestCSignatureTool:
             'class JSObject* DoCallback<JSObject*>(class JS::CallbackTracer*, class JSObject**, const char*)', '23',  # noqa
             'DoCallback<T>'
         ),
+        # But don't run drop_prefix_and_return_types for operator overloading
+        # functions
+        (
+            'JS::Heap<JSObject*>::operator JSObject* const &()', '23',
+            'JS::Heap<T>::operator JSObject* const&'
+        ),
 
-        # Drop "const" at end
+        # Drop cv/ref qualifiers at end
         (
             'JSObject::allocKindForTenure const', '23',
             'JSObject::allocKindForTenure'
-        )
+        ),
+        (
+            'mozilla::jni::GlobalRef<mozilla::jni::Object>::operator=(mozilla::jni::Ref<mozilla::jni::Object, _jobject*> const&)&', '23',  # noqa
+            'mozilla::jni::GlobalRef<T>::operator='
+        ),
     ])
     def test_normalize_cpp_function(self, function, line, expected):
         """Test normalization for cpp functions"""
@@ -228,30 +237,30 @@ class TestCSignatureTool:
         """test_generate_1: simple"""
         s = self.setup_config_c_sig_tool(['a', 'b', 'c'], ['d', 'e', 'f'])
         a = list('abcdefghijklmnopqrstuvwxyz')
-        sig, notes = s.generate(a)
+        sig, notes, debug_notes = s.generate(a)
         assert sig == 'd | e | f | g'
 
         a = list('abcdaeafagahijklmnopqrstuvwxyz')
-        sig, notes = s.generate(a)
+        sig, notes, debug_notes = s.generate(a)
         assert sig == 'd | e | f | g'
 
     def test_generate_2(self):
         """test_generate_2: hang"""
         s = self.setup_config_c_sig_tool(['a', 'b', 'c'], ['d', 'e', 'f'])
         a = list('abcdefghijklmnopqrstuvwxyz')
-        sig, notes = s.generate(a, hang_type=-1)
+        sig, notes, debug_notes = s.generate(a, hang_type=-1)
         assert sig == 'hang | d | e | f | g'
 
         a = list('abcdaeafagahijklmnopqrstuvwxyz')
-        sig, notes = s.generate(a, hang_type=-1)
+        sig, notes, debug_notes = s.generate(a, hang_type=-1)
         assert sig == 'hang | d | e | f | g'
 
         a = list('abcdaeafagahijklmnopqrstuvwxyz')
-        sig, notes = s.generate(a, hang_type=0)
+        sig, notes, debug_notes = s.generate(a, hang_type=0)
         assert sig == 'd | e | f | g'
 
         a = list('abcdaeafagahijklmnopqrstuvwxyz')
-        sig, notes = s.generate(a, hang_type=1)
+        sig, notes, debug_notes = s.generate(a, hang_type=1)
         assert sig == 'chromehang | d | e | f | g'
 
     def test_generate_2a(self):
@@ -269,7 +278,7 @@ class TestCSignatureTool:
             'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff | '
             'gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg'
         )
-        sig, notes = s.generate(a)
+        sig, notes, debug_notes = s.generate(a)
         assert sig == expected
         expected = (
             'hang | '
@@ -278,7 +287,7 @@ class TestCSignatureTool:
             'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff | '
             'gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg'
         )
-        sig, notes = s.generate(a, hang_type=-1)
+        sig, notes, debug_notes = s.generate(a, hang_type=-1)
         assert sig == expected
 
     def test_generate_3(self):
@@ -286,14 +295,14 @@ class TestCSignatureTool:
         s = self.setup_config_c_sig_tool(['a', 'b', 'c'], ['d', 'e', 'f'])
         a = list('abcdefghabcfaeabdijklmnopqrstuvwxyz')
         a[7] = 'sentinel'
-        sig, notes = s.generate(a)
+        sig, notes, debug_notes = s.generate(a)
         assert sig == 'sentinel'
 
         s = self.setup_config_c_sig_tool(
             ['a', 'b', 'c', 'sentinel'],
             ['d', 'e', 'f']
         )
-        sig, notes = s.generate(a)
+        sig, notes, debug_notes = s.generate(a)
         assert sig == 'f | e | d | i'
 
     def test_generate_4(self):
@@ -301,14 +310,14 @@ class TestCSignatureTool:
         s = self.setup_config_c_sig_tool(['a', 'b', 'c'], ['d', 'e', 'f'])
         a = list('abcdefghabcfaeabdijklmnopqrstuvwxyz')
         a[7] = 'sentinel2'
-        sig, notes = s.generate(a)
+        sig, notes, debug_notes = s.generate(a)
         assert sig == 'd | e | f | g'
 
         s = self.setup_config_c_sig_tool(['a', 'b', 'c'], ['d', 'e', 'f'])
         a = list('abcdefghabcfaeabdijklmnopqrstuvwxyz')
         a[7] = 'sentinel2'
         a[22] = 'ff'
-        sig, notes = s.generate(a)
+        sig, notes, debug_notes = s.generate(a)
         assert sig == 'sentinel2'
 
         s = self.setup_config_c_sig_tool(
@@ -318,11 +327,11 @@ class TestCSignatureTool:
         a = list('abcdefghabcfaeabdijklmnopqrstuvwxyz')
         a[7] = 'sentinel2'
         a[22] = 'ff'
-        sig, notes = s.generate(a)
+        sig, notes, debug_notes = s.generate(a)
         assert sig == 'f | e | d | i'
 
     def test_generate_with_merged_dll(self):
-        generator = self.setup_config_c_sig_tool(
+        sig_tool = self.setup_config_c_sig_tool(
             ['a', 'b', 'c'],
             ['d', 'e', 'f']
         )
@@ -334,7 +343,7 @@ class TestCSignatureTool:
             'foo32.dll@0x42',
             'g',
         )
-        sig, notes = generator.generate(source_list)
+        sig, notes, debug_notes = sig_tool.generate(source_list)
         assert sig == 'd | foo32.dll | g'
 
         source_list = (
@@ -342,7 +351,7 @@ class TestCSignatureTool:
             'foo32.dll@0x231423',
             'g',
         )
-        sig, notes = generator.generate(source_list)
+        sig, notes, debug_notes = sig_tool.generate(source_list)
         assert sig == 'foo32.dll | g'
 
 
@@ -350,7 +359,7 @@ class TestJavaSignatureTool:
     def test_bad_stack(self):
         j = rules.JavaSignatureTool()
         java_stack_trace = 17
-        sig, notes = j.generate(java_stack_trace, delimiter=': ')
+        sig, notes, debug_notes = j.generate(java_stack_trace, delimiter=': ')
         assert sig == "EMPTY: Java stack trace not in expected format"
         assert notes == ['JavaSignatureTool: stack trace not in expected format']
 
@@ -360,7 +369,7 @@ class TestJavaSignatureTool:
             'SomeJavaException: totally made up  \n'
             'at org.mozilla.lars.myInvention(larsFile.java:666)'
         )
-        sig, notes = j.generate(java_stack_trace, delimiter=': ')
+        sig, notes, debug_notes = j.generate(java_stack_trace, delimiter=': ')
         e = 'SomeJavaException: totally made up at org.mozilla.lars.myInvention(larsFile.java)'
         assert sig == e
         assert notes == []
@@ -371,7 +380,7 @@ class TestJavaSignatureTool:
             'SomeJavaException: totally made up  \n'
             'at org.mozilla.lars.myInvention(larsFile.java)'
         )
-        sig, notes = j.generate(java_stack_trace, delimiter=': ')
+        sig, notes, debug_notes = j.generate(java_stack_trace, delimiter=': ')
         e = 'SomeJavaException: totally made up at org.mozilla.lars.myInvention(larsFile.java)'
         assert sig == e
         assert notes == []
@@ -382,7 +391,7 @@ class TestJavaSignatureTool:
             '   SomeJavaException: %s \nat org.mozilla.lars.myInvention(larsFile.java)' %
             ('t' * 1000)
         )
-        sig, notes = j.generate(java_stack_trace, delimiter=': ')
+        sig, notes, debug_notes = j.generate(java_stack_trace, delimiter=': ')
         expected = 'SomeJavaException: at org.mozilla.lars.myInvention(larsFile.java)'
         assert sig == expected
         expected = ['JavaSignatureTool: dropped Java exception description due to length']
@@ -394,7 +403,7 @@ class TestJavaSignatureTool:
             '   SomeJavaException: %s  \nat org.mozilla.lars.myInvention(larsFile.java:1234)' %
             ('t' * 1000)
         )
-        sig, notes = j.generate(java_stack_trace, delimiter=': ')
+        sig, notes, debug_notes = j.generate(java_stack_trace, delimiter=': ')
         expected = 'SomeJavaException: at org.mozilla.lars.myInvention(larsFile.java)'
         assert sig == expected
         expected = ['JavaSignatureTool: dropped Java exception description due to length']
@@ -406,7 +415,7 @@ class TestJavaSignatureTool:
             '   SomeJavaException\n'
             'at org.mozilla.lars.myInvention(larsFile.java:1234)'
         )
-        sig, notes = j.generate(java_stack_trace, delimiter=': ')
+        sig, notes, debug_notes = j.generate(java_stack_trace, delimiter=': ')
         e = 'SomeJavaException: at org.mozilla.lars.myInvention(larsFile.java)'
         assert sig == e
         e = ['JavaSignatureTool: stack trace line 1 is not in the expected format']
@@ -415,7 +424,7 @@ class TestJavaSignatureTool:
     def test_frame_with_line_ending_but_missing_second_line(self):
         j = rules.JavaSignatureTool()
         java_stack_trace = 'SomeJavaException: totally made up  \n'
-        sig, notes = j.generate(java_stack_trace, delimiter=': ')
+        sig, notes, debug_notes = j.generate(java_stack_trace, delimiter=': ')
         e = 'SomeJavaException: totally made up'
         assert sig == e
         e = ['JavaSignatureTool: stack trace line 2 is missing']
@@ -424,7 +433,7 @@ class TestJavaSignatureTool:
     def test_frame_missing_second_line(self):
         j = rules.JavaSignatureTool()
         java_stack_trace = 'SomeJavaException: totally made up  '
-        sig, notes = j.generate(java_stack_trace, delimiter=': ')
+        sig, notes, debug_notes = j.generate(java_stack_trace, delimiter=': ')
         e = 'SomeJavaException: totally made up'
         assert sig == e
         e = ['JavaSignatureTool: stack trace line 2 is missing']
@@ -437,7 +446,7 @@ class TestJavaSignatureTool:
             'at org.mozilla.lars.myInvention('
             'foolarsFile.java:1234)'
         )
-        sig, notes = j.generate(java_stack_trace, delimiter=': ')
+        sig, notes, debug_notes = j.generate(java_stack_trace, delimiter=': ')
         expected = (
             'SomeJavaException: totally made up at org.mozilla.lars.myInvention(foolarsFile.java)'
         )
@@ -448,10 +457,11 @@ class TestJavaSignatureTool:
         # with the literal ``<addr>``, however in this case, the hex address is
         # not in the expected location and should therefore be left alone
         j = rules.JavaSignatureTool()
-        java_stack_trace = ('SomeJavaException: totally made up  \n'
-                            'at org.mozilla.lars.myInvention('
-                            'larsFile.java:@abef1234)')
-        sig, notes = j.generate(java_stack_trace, delimiter=' ')
+        java_stack_trace = (
+            'SomeJavaException: totally made up  \n'
+            'at org.mozilla.lars.myInvention(larsFile.java:@abef1234)'
+        )
+        sig, notes, debug_notes = j.generate(java_stack_trace, delimiter=' ')
         e = ('SomeJavaException totally made up '
              'at org.mozilla.lars.myInvention('
              'larsFile.java:@abef1234)')
@@ -479,7 +489,7 @@ java.lang.IllegalArgumentException: Given view not a child of android.widget.Abs
 \tat com.android.internal.os.ZygoteInit$MethodAndArgsCaller.run(ZygoteInit.java:849)
 \tat com.android.internal.os.ZygoteInit.main(ZygoteInit.java:607)
 \tat dalvik.system.NativeStart.main(Native Method)""".lstrip()
-        sig, notes = j.generate(java_stack_trace, delimiter=': ')
+        sig, notes, debug_notes = j.generate(java_stack_trace, delimiter=': ')
         e = (
             'java.lang.IllegalArgumentException: '
             'Given view not a child of android.widget.AbsoluteLayout@<addr>: '
@@ -509,7 +519,7 @@ android.view.WindowManager$BadTokenException: Unable to add window -- token andr
 \tat com.android.internal.os.ZygoteInit.main(ZygoteInit.java:625)
 \tat dalvik.system.NativeStart.main(Native Method)
 """.lstrip()  # noqa
-        sig, notes = j.generate(java_stack_trace, delimiter=': ')
+        sig, notes, debug_notes = j.generate(java_stack_trace, delimiter=': ')
         e = ('android.view.WindowManager$BadTokenException: '
              'Unable to add window -- token android.os.BinderProxy@<addr> '
              'is not valid; is your activity running? '
@@ -546,7 +556,7 @@ java.lang.IllegalArgumentException: Receiver not registered: org.mozilla.gecko.G
 \tat com.android.internal.os.ZygoteInit.main(ZygoteInit.java:665)
 \tat dalvik.system.NativeStart.main(Native Method)
 """.lstrip()  # noqa
-        sig, notes = j.generate(java_stack_trace, delimiter=': ')
+        sig, notes, debug_notes = j.generate(java_stack_trace, delimiter=': ')
         e = (
             'java.lang.IllegalArgumentException: '
             'Receiver not registered: '
@@ -918,7 +928,6 @@ frames_from_json_dump_with_templates_and_special_case = {
 
 
 class TestSignatureGeneration:
-
     def test_create_frame_list(self):
         sgr = rules.SignatureGenerationRule()
         frame_signatures_list = sgr._create_frame_list(frames_from_json_dump)
@@ -948,19 +957,17 @@ class TestSignatureGeneration:
             )
         }
 
-        signature = {
-            'signature': '',
-            'notes': []
-        }
+        result = generator.Result()
 
         # the call to be tested
-        assert sgr.action(crash_data, signature) is True
+        assert sgr.action(crash_data, result) is True
 
         expected = 'SomeJavaException: at org.mozilla.lars.myInvention(larsFile.java)'
-        assert signature['signature'] == expected
-        assert 'proto_signature' not in signature
-        expected = ['JavaSignatureTool: dropped Java exception description due to length']
-        assert signature['notes'] == expected
+        assert result.signature == expected
+        assert 'proto_signature' not in result.extra
+        assert result.notes == [
+            'SignatureGenerationRule: JavaSignatureTool: dropped Java exception description due to length'  # noqa
+        ]
 
     def test_c_stack_trace(self):
         sgr = rules.SignatureGenerationRule()
@@ -969,16 +976,13 @@ class TestSignatureGeneration:
             'os': 'Windows NT',
             'threads': [frames_from_json_dump]
         }
-        result = {
-            'signature': '',
-            'notes': []
-        }
+        result = generator.Result()
 
         # the call to be tested
         assert sgr.action(crash_data, result) is True
 
         expected = 'MsgWaitForMultipleObjects | F_1152915508__________________________________'
-        assert result['signature'] == expected
+        assert result.signature == expected
 
         expected = (
             'NtWaitForMultipleObjects | WaitForMultipleObjectsEx | '
@@ -990,8 +994,8 @@ class TestSignatureGeneration:
             'F1315696776________________________________ | '
             'F_1428703866________________________________'
         )
-        assert result['proto_signature'] == expected
-        assert result['notes'] == []
+        assert result.extra['proto_signature'] == expected
+        assert result.notes == []
 
     def test_action_2_with_templates(self):
         sgr = rules.SignatureGenerationRule()
@@ -1001,15 +1005,12 @@ class TestSignatureGeneration:
             'crashing_thread': 0,
             'threads': [frames_from_json_dump_with_templates]
         }
-        result = {
-            'signature': '',
-            'notes': []
-        }
+        result = generator.Result()
 
         # the call to be tested
         assert sgr.action(crash_data, result) is True
 
-        assert result['signature'] == 'Alpha<T>::Echo<T>'
+        assert result.signature == 'Alpha<T>::Echo<T>'
         expected = (
             'NtWaitForMultipleObjects | Alpha<T>::Echo<T> | '
             'WaitForMultipleObjectsExImplementation | '
@@ -1021,8 +1022,8 @@ class TestSignatureGeneration:
             'F1315696776________________________________ | '
             'F_1428703866________________________________'
         )
-        assert result['proto_signature'] == expected
-        assert result['notes'] == []
+        assert result.extra['proto_signature'] == expected
+        assert result.notes == []
 
     def test_action_2_with_templates_and_special_case(self):
         sgr = rules.SignatureGenerationRule()
@@ -1032,16 +1033,12 @@ class TestSignatureGeneration:
             'crashing_thread': 0,
             'threads': [frames_from_json_dump_with_templates_and_special_case]
         }
-        result = {
-            'signature': '',
-            'notes': []
-        }
+        result = generator.Result()
 
         # the call to be tested
         assert sgr.action(crash_data, result) is True
 
-        expected = '<name omitted> | IPC::ParamTraits<mozilla::net::NetAddr>::Write'
-        assert result['signature'] == expected
+        assert result.signature == '<name omitted> | IPC::ParamTraits<mozilla::net::NetAddr>::Write'
         expected = (
             'NtWaitForMultipleObjects | '
             '<name omitted> | '
@@ -1054,8 +1051,8 @@ class TestSignatureGeneration:
             'F1315696776________________________________ | '
             'F_1428703866________________________________'
         )
-        assert result['proto_signature'] == expected
-        assert result['notes'] == []
+        assert result.extra['proto_signature'] == expected
+        assert result.notes == []
 
     def test_action_3(self):
         sgr = rules.SignatureGenerationRule()
@@ -1063,21 +1060,16 @@ class TestSignatureGeneration:
         crash_data = {
             'thread': [[]],
         }
-        result = {
-            'signature': '',
-            'notes': []
-        }
+        result = generator.Result()
 
         # the call to be tested
         assert sgr.action(crash_data, result) is True
 
-        assert result['signature'] == 'EMPTY: no crashing thread identified'
-        assert 'proto_signature' not in result
-        expected = [
-            'CSignatureTool: No signature could be created because we do '
-            'not know which thread crashed'
+        assert result.signature == 'EMPTY: no crashing thread identified'
+        assert 'proto_signature' not in result.extra
+        assert result.notes == [
+            'SignatureGenerationRule: CSignatureTool: No signature could be created because we do not know which thread crashed'  # noqa
         ]
-        assert result['notes'] == expected
 
     def test_lower_case_modules(self):
         sgr = rules.SignatureGenerationRule()
@@ -1108,25 +1100,20 @@ class TestSignatureGeneration:
                 ]
             }]
         }
-        result = {
-            'signature': '',
-            'notes': []
-        }
+        result = generator.Result()
 
         # the call to be tested
         assert sgr.action(crash_data, result) is True
-        assert result['signature'] == 'user2.dll@0x20869'
+        assert result.signature == 'user2.dll'
         expected = '@0x5e39bf21 | @0x5e39bf21 | @0x5e39bf21 | user2.dll@0x20869'
-        assert result['proto_signature'] == expected
-        assert result['notes'] == []
+        assert result.extra['proto_signature'] == expected
+        assert result.notes == []
 
 
 class TestOOMSignature:
     def test_predicate_no_match(self):
-        result = {
-            'signature': 'hello',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'hello'
         rule = rules.OOMSignature()
         assert rule.predicate({}, result) is False
 
@@ -1143,93 +1130,77 @@ class TestOOMSignature:
 
     def test_predicate_signature_fragment_1(self):
         crash_data = {}
-        result = {
-            'signature': 'this | is | a | NS_ABORT_OOM | signature',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'this | is | a | NS_ABORT_OOM | signature'
         rule = rules.OOMSignature()
         assert rule.predicate(crash_data, result) is True
 
     def test_predicate_signature_fragment_2(self):
         crash_data = {}
-        result = {
-            'signature': 'mozalloc_handle_oom | this | is | bad',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'mozalloc_handle_oom | this | is | bad'
         rule = rules.OOMSignature()
         assert rule.predicate(crash_data, result) is True
 
     def test_predicate_signature_fragment_3(self):
         crash_data = {}
-        result = {
-            'signature': 'CrashAtUnhandlableOOM',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'CrashAtUnhandlableOOM'
         rule = rules.OOMSignature()
         assert rule.predicate(crash_data, result) is True
 
     def test_action_success(self):
         crash_data = {}
-        result = {
-            'signature': 'hello',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'hello'
         rule = rules.OOMSignature()
         action_result = rule.action(crash_data, result)
 
         assert action_result is True
-        assert result['signature'] == 'OOM | unknown | hello'
+        assert result.signature == 'OOM | unknown | hello'
 
     def test_action_small(self):
         crash_data = {
             'oom_allocation_size': 17
         }
-        result = {
-            'signature': 'hello',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'hello'
         rule = rules.OOMSignature()
         action_result = rule.action(crash_data, result)
 
         assert action_result is True
-        assert result['signature'] == 'OOM | small'
+        assert result.signature == 'OOM | small'
 
     def test_action_large(self):
         crash_data = {
             'oom_allocation_size': 17000000
         }
-        result = {
-            'signature': 'hello',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'hello'
 
         rule = rules.OOMSignature()
         action_result = rule.action(crash_data, result)
 
         assert action_result is True
-        assert result['signature'] == 'OOM | large | hello'
+        assert result.signature == 'OOM | large | hello'
 
 
 class TestAbortSignature:
-
     def test_predicate(self):
         rule = rules.AbortSignature()
         crash_data = {
             'abort_message': 'something'
         }
-        result = {
-            'signature': 'hello',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'hello'
         assert rule.predicate(crash_data, result) is True
 
     def test_predicate_no_match(self):
         rule = rules.AbortSignature()
         # No AbortMessage
         crash_data = {}
-        result = {
-            'signature': 'hello'
-        }
+        result = generator.Result()
+        result.signature = 'hello'
         assert rule.predicate(crash_data, result) is False
 
     def test_predicate_empty_message(self):
@@ -1237,10 +1208,8 @@ class TestAbortSignature:
         crash_data = {
             'abort_message': ''
         }
-        result = {
-            'signature': 'hello',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'hello'
         assert rule.predicate(crash_data, result) is False
 
     def test_action_success(self):
@@ -1248,13 +1217,11 @@ class TestAbortSignature:
         crash_data = {
             'abort_message': 'unknown'
         }
-        result = {
-            'signature': 'hello',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'hello'
         action_result = rule.action(crash_data, result)
         assert action_result is True
-        assert result['signature'] == 'Abort | unknown | hello'
+        assert result.signature == 'Abort | unknown | hello'
 
     def test_action_success_long_message(self):
         rule = rules.AbortSignature()
@@ -1262,15 +1229,12 @@ class TestAbortSignature:
         crash_data = {
             'abort_message': 'a' * 81
         }
-        result = {
-            'signature': 'hello',
-            'notes': []
-        }
-
+        result = generator.Result()
+        result.signature = 'hello'
         action_result = rule.action(crash_data, result)
 
         assert action_result is True
-        assert result['signature'] == 'Abort | {}... | hello'.format('a' * 77)
+        assert result.signature == 'Abort | {}... | hello'.format('a' * 77)
 
     @pytest.mark.parametrize('abort_msg, expected', [
         # Test with just the "ABOR" thing at the start
@@ -1316,14 +1280,12 @@ class TestAbortSignature:
         crash_data = {
             'abort_message': abort_msg
         }
-        result = {
-            'signature': 'hello'
-        }
-
+        result = generator.Result()
+        result.signature = 'hello'
         action_result = rule.action(crash_data, result)
 
         assert action_result is True
-        assert result['signature'] == expected
+        assert result.signature == expected
 
     def test_action_non_ascii_abort_message(self):
         # Non-ascii characters are removed from abort messages
@@ -1331,37 +1293,14 @@ class TestAbortSignature:
         crash_data = {
             'abort_message': '\u018a unknown'
         }
-        result = {
-            'signature': 'hello',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'hello'
         action_result = rule.action(crash_data, result)
         assert action_result is True
-        assert result['signature'] == 'Abort | unknown | hello'
+        assert result.signature == 'Abort | unknown | hello'
 
 
 class TestSigFixWhitespace:
-
-    def test_predicate_no_match(self):
-        rule = rules.SigFixWhitespace()
-
-        result = {
-            'signature': '',
-            'notes': []
-        }
-        assert rule.predicate({}, result) is True
-
-        result['signature'] = 42
-        assert rule.predicate({}, result) is False
-
-    def test_predicate(self):
-        rule = rules.SigFixWhitespace()
-        result = {
-            'signature': 'fooo::baar',
-            'notes': []
-        }
-        assert rule.predicate({}, result) is True
-
     @pytest.mark.parametrize('signature, expected', [
         # Leading and trailing whitespace are removed
         ('all   good', 'all good'),
@@ -1378,61 +1317,47 @@ class TestSigFixWhitespace:
     ])
     def test_whitespace_fixing(self, signature, expected):
         rule = rules.SigFixWhitespace()
-        result = {
-            'signature': signature,
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = signature
         action_result = rule.action({}, result)
         assert action_result is True
-        assert result['signature'] == expected
+        assert result.signature == expected
 
 
 class TestSigTruncate:
-
     def test_predicate_no_match(self):
         rule = rules.SigTruncate()
-        result = {
-            'signature': '0' * 100,
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = '0' * 100
         assert rule.predicate({}, result) is False
 
     def test_predicate(self):
         rule = rules.SigTruncate()
-        result = {
-            'signature': '9' * 256,
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = '9' * 256
         assert rule.predicate({}, result) is True
 
     def test_action_success(self):
         rule = rules.SigTruncate()
-        result = {
-            'signature': '9' * 256,
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = '9' * 256
         action_result = rule.action({}, result)
         assert action_result is True
-        assert len(result['signature']) == 255
-        assert result['signature'].endswith('9...')
+        assert len(result.signature) == 255
+        assert result.signature.endswith('9...')
 
 
 class TestStackwalkerErrorSignatureRule:
-
     def test_predicate_no_match_signature(self):
         rule = rules.StackwalkerErrorSignatureRule()
-        result = {
-            'signature': '0' * 100,
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = '0' * 100
         assert rule.predicate({}, result) is False
 
     def test_predicate_no_match_missing_mdsw_status_string(self):
         rule = rules.StackwalkerErrorSignatureRule()
-        result = {
-            'signature': 'EMPTY: like my soul',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'EMPTY: like my soul'
         assert rule.predicate({}, result) is False
 
     def test_predicate(self):
@@ -1440,10 +1365,8 @@ class TestStackwalkerErrorSignatureRule:
         crash_data = {
             'mdsw_status_string': 'catastrophic stackwalker failure'
         }
-        result = {
-            'signature': 'EMPTY: like my soul',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'EMPTY: like my soul'
         assert rule.predicate(crash_data, result) is True
 
     def test_action_success(self):
@@ -1451,18 +1374,15 @@ class TestStackwalkerErrorSignatureRule:
         crash_data = {
             'mdsw_status_string': 'catastrophic stackwalker failure'
         }
-        result = {
-            'signature': 'EMPTY: like my soul',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'EMPTY: like my soul'
         action_result = rule.action(crash_data, result)
         assert action_result is True
         expected = 'EMPTY: like my soul; catastrophic stackwalker failure'
-        assert result['signature'] == expected
+        assert result.signature == expected
 
 
 class TestSignatureWatchDogRule:
-
     def test_instantiation(self):
         srwd = rules.SignatureRunWatchDog()
 
@@ -1474,22 +1394,16 @@ class TestSignatureWatchDogRule:
     def test_predicate(self):
         srwd = rules.SignatureRunWatchDog()
 
-        result = {
-            'signature': "I'm not real",
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = "I'm not real"
         assert srwd.predicate({}, result) is False
 
-        result = {
-            'signature': "mozilla::`anonymous namespace''::RunWatchdog(void*)",
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = "mozilla::`anonymous namespace''::RunWatchdog(void*)"
         assert srwd.predicate({}, result) is True
 
-        result = {
-            'signature': "mozilla::(anonymous namespace)::RunWatchdog",
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = "mozilla::(anonymous namespace)::RunWatchdog"
         assert srwd.predicate({}, result) is True
 
     def test_action(self):
@@ -1500,10 +1414,8 @@ class TestSignatureWatchDogRule:
             'crashing_thread': 0,
             'threads': [frames_from_json_dump]
         }
-        result = {
-            'signature': 'foo::bar',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'foo::bar'
 
         # the call to be tested
         assert sgr.action(crash_data, result) is True
@@ -1513,12 +1425,11 @@ class TestSignatureWatchDogRule:
             'shutdownhang | MsgWaitForMultipleObjects | '
             'F_1152915508__________________________________'
         )
-        assert result['signature'] == expected
-        assert result['notes'] == []
+        assert result.signature == expected
+        assert result.notes == []
 
 
 class TestSignatureJitCategory:
-
     def test_predicate_no_match(self):
         rule = rules.SignatureJitCategory()
 
@@ -1558,30 +1469,22 @@ class TestSignatureJitCategory:
         crash_data = {
             'jit_category': 'JIT Crash'
         }
-        result = {
-            'signature': 'foo::bar',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'foo::bar'
 
         action_result = rule.action(crash_data, result)
         assert action_result is True
-        assert result['signature'] == 'jit | JIT Crash'
-        assert (
-            result['notes'] ==
-            ['Signature replaced with a JIT Crash Category, was: "foo::bar"']
-        )
+        assert result.signature == 'jit | JIT Crash'
+        assert result.notes == [
+            'SignatureJitCategory: Signature replaced with a JIT Crash Category, was: "foo::bar"'
+        ]
 
 
 class TestSignatureIPCChannelError:
-
     def test_predicate_no_match(self):
         rule = rules.SignatureIPCChannelError()
 
-        result = {
-            'signature': '',
-            'notes': []
-        }
-
+        result = generator.Result()
         assert rule.predicate({}, result) is False
 
         crash_data = {
@@ -1599,11 +1502,7 @@ class TestSignatureIPCChannelError:
         crash_data = {
             'ipc_channel_error': 'foo, bar'
         }
-        result = {
-            'signature': '',
-            'notes': []
-        }
-
+        result = generator.Result()
         assert rule.predicate(crash_data, result) is True
 
     def test_action_success(self):
@@ -1612,45 +1511,35 @@ class TestSignatureIPCChannelError:
         crash_data = {
             'ipc_channel_error': 'ipc' * 50
         }
-        result = {
-            'signature': 'foo::bar',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'foo::bar'
 
         action_result = rule.action(crash_data, result)
         assert action_result is True
         expected = 'IPCError-content | {}'.format(('ipc' * 50)[:100])
-        assert result['signature'] == expected
-        assert (
-            result['notes'] ==
-            ['Signature replaced with an IPC Channel Error, was: "foo::bar"']
-        )
+        assert result.signature == expected
+        assert result.notes == [
+            'SignatureIPCChannelError: Signature replaced with an IPC Channel Error, was: "foo::bar"'  # noqa
+        ]
 
         # Now test with a browser crash.
         crash_data['additional_minidumps'] = 'browser'
-        result = {
-            'signature': 'foo::bar',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'foo::bar'
 
         action_result = rule.action(crash_data, result)
         assert action_result is True
 
-        assert result['signature'] == 'IPCError-browser | {}'.format(('ipc' * 50)[:100])
-        assert (
-            result['notes'] ==
-            ['Signature replaced with an IPC Channel Error, was: "foo::bar"']
-        )
+        assert result.signature == 'IPCError-browser | {}'.format(('ipc' * 50)[:100])
+        assert result.notes == [
+            'SignatureIPCChannelError: Signature replaced with an IPC Channel Error, was: "foo::bar"'  # noqa
+        ]
 
 
 class TestSignatureShutdownTimeout:
-
     def test_predicate_no_match(self):
         rule = rules.SignatureShutdownTimeout()
-        result = {
-            'signature': '',
-            'notes': []
-        }
+        result = generator.Result()
         assert rule.predicate({}, result) is False
 
     def test_predicate(self):
@@ -1659,31 +1548,28 @@ class TestSignatureShutdownTimeout:
         crash_data = {
             'async_shutdown_timeout': '{"foo": "bar"}'
         }
-        result = {
-            'signature': '',
-            'notes': []
-        }
+        result = generator.Result()
         assert rule.predicate(crash_data, result) is True
 
     def test_action_missing_valueerror(self):
         rule = rules.SignatureShutdownTimeout()
 
         crash_data = {
+            # This will cause json.load to raise an error
             'async_shutdown_timeout': '{{{{'
         }
-        result = {
-            'signature': 'foo',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'foo'
 
         action_result = rule.action(crash_data, result)
         assert action_result is True
-        assert result['signature'] == 'AsyncShutdownTimeout | UNKNOWN'
+        assert result.signature == 'AsyncShutdownTimeout | UNKNOWN'
 
-        assert 'Error parsing AsyncShutdownTimeout:' in result['notes'][0]
-        assert 'Expected object or value' in result['notes'][0]
+        assert 'Error parsing AsyncShutdownTimeout:' in result.notes[0]
+        assert 'Expecting property name' in result.notes[0]
+        print(result.notes[1])
         assert (
-            'Signature replaced with a Shutdown Timeout signature, was: "foo"' in result['notes'][1]
+            'Signature replaced with a Shutdown Timeout signature, was: "foo"' in result.notes[1]
         )
 
     def test_action_missing_keyerror(self):
@@ -1692,20 +1578,17 @@ class TestSignatureShutdownTimeout:
         crash_data = {
             'async_shutdown_timeout': json.dumps({'no': 'phase or condition'})
         }
-        result = {
-            'signature': 'foo',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'foo'
 
         action_result = rule.action(crash_data, result)
         assert action_result is True
-        assert result['signature'] == 'AsyncShutdownTimeout | UNKNOWN'
+        assert result.signature == 'AsyncShutdownTimeout | UNKNOWN'
 
-        assert result['notes'][0] == "Error parsing AsyncShutdownTimeout: 'phase'"
-        assert (
-            result['notes'][1] ==
-            'Signature replaced with a Shutdown Timeout signature, was: "foo"'
-        )
+        assert result.notes == [
+            "SignatureShutdownTimeout: Error parsing AsyncShutdownTimeout: 'phase'",
+            'SignatureShutdownTimeout: Signature replaced with a Shutdown Timeout signature, was: "foo"'  # noqa
+        ]
 
     def test_action_success(self):
         rule = rules.SignatureShutdownTimeout()
@@ -1719,16 +1602,15 @@ class TestSignatureShutdownTimeout:
                 ]
             })
         }
-        result = {
-            'signature': 'foo',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'foo'
 
         action_result = rule.action(crash_data, result)
         assert action_result is True
-        assert result['signature'] == 'AsyncShutdownTimeout | beginning | A,B'
-        expected = 'Signature replaced with a Shutdown Timeout signature, was: "foo"'
-        assert result['notes'][0] == expected
+        assert result.signature == 'AsyncShutdownTimeout | beginning | A,B'
+        assert result.notes == [
+            'SignatureShutdownTimeout: Signature replaced with a Shutdown Timeout signature, was: "foo"'  # noqa
+        ]
 
     def test_action_success_string_conditions(self):
         rule = rules.SignatureShutdownTimeout()
@@ -1739,16 +1621,15 @@ class TestSignatureShutdownTimeout:
                 'conditions': ['A', 'B', 'C']
             })
         }
-        result = {
-            'signature': 'foo',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'foo'
 
         action_result = rule.action(crash_data, result)
         assert action_result is True
-        assert result['signature'] == 'AsyncShutdownTimeout | beginning | A,B,C'
-        expected = 'Signature replaced with a Shutdown Timeout signature, was: "foo"'
-        assert result['notes'][0] == expected
+        assert result.signature == 'AsyncShutdownTimeout | beginning | A,B,C'
+        assert result.notes == [
+            'SignatureShutdownTimeout: Signature replaced with a Shutdown Timeout signature, was: "foo"'  # noqa
+        ]
 
     def test_action_success_empty_conditions_key(self):
         rule = rules.SignatureShutdownTimeout()
@@ -1759,26 +1640,21 @@ class TestSignatureShutdownTimeout:
                 'conditions': []
             })
         }
-        result = {
-            'signature': 'foo',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'foo'
 
         action_result = rule.action(crash_data, result)
         assert action_result is True
-        assert result['signature'] == 'AsyncShutdownTimeout | beginning | (none)'
-        expected = 'Signature replaced with a Shutdown Timeout signature, was: "foo"'
-        assert result['notes'][0] == expected
+        assert result.signature == 'AsyncShutdownTimeout | beginning | (none)'
+        assert result.notes == [
+            'SignatureShutdownTimeout: Signature replaced with a Shutdown Timeout signature, was: "foo"'  # noqa
+        ]
 
 
 class TestSignatureIPCMessageName:
-
     def test_predicate_no_ipc_message_name(self):
         rule = rules.SignatureIPCMessageName()
-        result = {
-            'signature': '',
-            'notes': []
-        }
+        result = generator.Result()
         assert rule.predicate({}, result) is False
 
     def test_predicate_empty_string(self):
@@ -1786,10 +1662,7 @@ class TestSignatureIPCMessageName:
         crash_data = {
             'ipc_message_name': ''
         }
-        result = {
-            'signature': '',
-            'notes': []
-        }
+        result = generator.Result()
         assert rule.predicate(crash_data, result) is False
 
     def test_predicate(self):
@@ -1797,10 +1670,8 @@ class TestSignatureIPCMessageName:
         crash_data = {
             'ipc_message_name': 'foo, bar'
         }
-        result = {
-            'signature': 'fooo::baar',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'fooo::baar'
         assert rule.predicate(crash_data, result) is True
 
     def test_action_success(self):
@@ -1808,17 +1679,14 @@ class TestSignatureIPCMessageName:
         crash_data = {
             'ipc_message_name': 'foo, bar'
         }
-        result = {
-            'signature': 'fooo::baar',
-            'notes': []
-        }
+        result = generator.Result()
+        result.signature = 'fooo::baar'
         action_result = rule.action(crash_data, result)
         assert action_result is True
-        assert result['signature'] == 'fooo::baar | IPC_Message_Name=foo, bar'
+        assert result.signature == 'fooo::baar | IPC_Message_Name=foo, bar'
 
 
 class TestSignatureParentIDNotEqualsChildID:
-
     def test_predicate_no_moz_crash_reason(self):
         rule = rules.SignatureParentIDNotEqualsChildID()
         result = {
@@ -1843,11 +1711,8 @@ class TestSignatureParentIDNotEqualsChildID:
         crash_data = {
             'moz_crash_reason': 'MOZ_RELEASE_ASSERT(parentBuildID == childBuildID)'
         }
-        result = {
-            'signature': 'fooo::baar',
-            'notes': []
-        }
-
+        result = generator.Result()
+        result.signature = 'fooo::baar'
         assert rule.predicate(crash_data, result) is True
 
     def test_action(self):
@@ -1855,12 +1720,11 @@ class TestSignatureParentIDNotEqualsChildID:
         crash_data = {
             'moz_crash_reason': 'MOZ_RELEASE_ASSERT(parentBuildID == childBuildID)'
         }
-        result = {
-            'signature': 'fooo::baar',
-            'notes': []
-        }
-
+        result = generator.Result()
+        result.signature = 'fooo::baar'
         action_result = rule.action(crash_data, result)
         assert action_result is True
-        assert result['signature'] == 'parentBuildID != childBuildID'
-        assert result['notes'][0] == 'Signature replaced with MozCrashAssert, was: "fooo::baar"'
+        assert result.signature == 'parentBuildID != childBuildID'
+        assert result.notes == [
+            'SignatureParentIDNotEqualsChildID: Signature replaced with MOZ_RELEASE_ASSERT, was: "fooo::baar"'  # noqa
+        ]

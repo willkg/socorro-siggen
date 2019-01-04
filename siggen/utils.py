@@ -36,7 +36,7 @@ def convert_to_crash_data(raw_crash, processed_crash):
 
     crash_data = {
         # JavaStackTrace or None
-        'java_stack_trace': glom(raw_crash, 'JavaStackTrace', default=None),
+        'java_stack_trace': glom(processed_crash, 'java_stack_trace', default=None),
 
         # int or None
         'crashing_thread': glom(
@@ -74,7 +74,7 @@ def convert_to_crash_data(raw_crash, processed_crash):
         'ipc_message_name': glom(raw_crash, 'IPCMessageName', default=None),
 
         # text
-        'moz_crash_reason': glom(raw_crash, 'MozCrashReason', default=None),
+        'moz_crash_reason': glom(processed_crash, 'moz_crash_reason', default=None),
 
         # text; comma-delimited e.g. "browser,flash1,flash2"
         'additional_minidumps': glom(raw_crash, 'additional_minidumps', default=''),
@@ -302,16 +302,31 @@ def drop_prefix_and_return_type(function):
             else:
                 # This is an unmatched close.
                 current.append(char)
+        elif levels:
+            current.append(char)
         elif char == ' ':
-            if levels:
-                current.append(char)
-            else:
-                tokens.append(''.join(current))
-                current = []
+            tokens.append(''.join(current))
+            current = []
         else:
             current.append(char)
 
     if current:
         tokens.append(''.join(current))
+
+    while len(tokens) > 1 and tokens[-1].startswith(('(', '[clone')):
+        # It's possible for the function signature to have a space between
+        # the function name and the parenthesized arguments or [clone ...]
+        # thing. If that's the case, we join the last two tokens. We keep doing
+        # that until the last token is nice.
+        #
+        # Example:
+        #
+        #     somefunc (int arg1, int arg2)
+        #             ^
+        #     somefunc(int arg1, int arg2) [clone .cold.111]
+        #                                 ^
+        #     somefunc(int arg1, int arg2) [clone .cold.111] [clone .cold.222]
+        #                                 ^                 ^
+        tokens = tokens[:-2] + [' '.join(tokens[-2:])]
 
     return tokens[-1]

@@ -26,6 +26,7 @@ _chkstk
 CleanupPerAppKey
 ConditionVariableFallback::wait\(.*\)
 core::option::expect_failed
+core::ptr::drop_in_place
 core::result::unwrap_failed<T>
 core::str::slice_error_fail
 CrashInJS
@@ -63,6 +64,7 @@ JNI_GetCreatedJavaVM
 js::AutoCompartment::AutoCompartment
 js::AutoEnterOOMUnsafeRegion::crash
 js::detail::HashTable<.*>::
+mozilla::detail::HashTable<.*>::
 js::HashSet<.*>::
 js::HashMap<.*>::
 js::LifoAlloc::getOrCreateChunk
@@ -77,6 +79,7 @@ libobjc.A.dylib@0x1568.
 (libxul\.so|xul\.dll|XUL)@0x
 LL_
 malloc
+mbrtoc32
 _MD_
 memcmp
 __memcmp16
@@ -111,6 +114,7 @@ mozilla::ipc::RPCChannel::EnteredCxxStack
 mozilla::ipc::RPCChannel::Send
 mozilla::layers::CompositorD3D11::Failed
 mozilla::layers::CompositorD3D11::HandleError
+mozilla::SpinEventLoopUntil<T>
 mozilla::WrapNotNull<
 mozilla.*FatalError
 moz_xmalloc
@@ -139,7 +143,6 @@ nsDependentString::nsDependentString
 nsEventQueue::GetEvent
 nsThread::GetEvent
 nsThread::nsChainedEventQueue::GetEvent
-mozilla::SpinEventLoopUntil<T>
 [-+]\[NSException raise(:format:(arguments:)?)?\]
 nsInterfaceHashtable<.*>::
 nsINode::Slots
@@ -153,6 +156,7 @@ nsTArray<
 nsTArray_base<
 nsTArray_Impl<
 nsTHashtable<.*>::
+nsTSubstring<.*>::Assign
 nsThread::Shutdown
 NtUser
 objc_exception_throw
@@ -250,40 +254,5 @@ zzz_AsmCodeRange_
 mozilla::ipc::MessageChannel::~MessageChannel
 mozilla::MakeUnique<.*>
 
-# List of DLLs to add. At some point, should be replaced by one generic rule
-# for all DLLs.
-
-aticfx32\.dll
-aticfx64\.dll
-atidxx32\.dll
-atidxx64\.dll
-atiu9pag\.dll
-atiu9p64\.dll
-atiumd6a\.dll
-atiumdag\.dll
-atiumdva\.dll
-atiuxpag\.dll
-igd10iumd32\.dll
-igd10iumd64\.dll
-igd10umd32\.dll
-igd10umd64\.dll
-igdumd32\.dll
-igdumd64\.dll
-igdumdim32\.dll
-igdumdim64\.dll
-igd11dxva32\.dll
-igd11dxva64\.dll
-igdusc32\.dll
-igdusc64\.dll
-nvd3dum\.dll
-nvd3dumx\.dll
-nvoglnt\.dll
-nvumdshim\.dll
-nvumdshimx\.dll
-nvwgf2um\.dll
-nvwgf2umx\.dll
-nvapi\.dll
-nvapi64\.dll
-nvscpapi\.dll
-nvoglv32\.dll
-nvoglv64\.dll
+# Always continue for .dll files
+.*\.dll

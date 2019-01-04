@@ -8,6 +8,31 @@ History
 Bug fixes:
 
 * Add support for Python 3.4, 3.5, and 3.6.
+* 1515772: Add alloc::alloc::handle_alloc_error to the irrelevant signature list
+* 1515487: slim down dll handling in signature generation
+* 1515487: add ntdll.dll and friends to prefix list
+* 1511022: add debug logging for signature generation
+* 1511022: rework signature generation to use a Result instance
+* 1514746: add std::panicking::begin_panic<T> to sentinels
+* 1507186: get all the webapp tests passing
+* 1505954: add core::panicking::panic_fmt to sentinels
+* 1505954: Add core::panicking::panic_bounds_check to the setinel list
+* 1506781: fix silent ujson errors
+* 1506228: fix socorro/unittest/cron tests to work in python 3
+* 1503966: Add mozilla::detail::HashTable to the prefix list
+* 1502477: add moz_crash_reason_raw
+* 1501291: add nsTSubstring<T>::Assign to prefix list
+* 1500401: add core::panicking::panic to sentinel list
+* Update docs
+* 1495966: add core::ptr::drop_in_place to prefix signature list (#4629)
+* 1496732: add mbrtoc32 to prefix list
+* 1496599: Clean up JavaStackTrace field
+* Replace fake example with the real problematic string
+* 1493200: fix an infinite loop
+* 1493200: fix the double-clone vexing variation
+* 1488774: fix another cause of & signatures
+* 1493200: fix empty string signature generation
+* 1488774: remove cv/ref qualifiers in function names
 
 
 0.2.0 (August 29th, 2018)
