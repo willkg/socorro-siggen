@@ -6,8 +6,8 @@ from pkg_resources import parse_version
 
 
 # yyyymmdd
-__releasedate__ = ''
+__releasedate__ = '20190104'
 
 # x.y.z or x.y.z.dev0 -- semver
-__version__ = '0.2.1.dev0'
+__version__ = '0.2.1'
 VERSION = parse_version(__version__)
