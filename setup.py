@@ -42,7 +42,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=install_requires,
-    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*',
+    python_requires='>=3.5',
     entry_points="""
         [console_scripts]
         signify=siggen.cmd_signify:main
@@ -53,10 +53,7 @@ setup(
         'Development Status :: 2 - Pre-Alpha',
         'License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
