@@ -12,6 +12,7 @@ Abort
 .*alloc_impl
 alloc::oom::default_oom_handler
 alloc::oom::oom
+alloc::raw_vec::capacity_overflow
 _alloca_probe
 __android_log_assert
 arena_
@@ -45,6 +46,7 @@ free_impl
 GCGraphBuilder::NoteXPCOMChild
 gfxPlatform::Init
 getanswer
+gkrust_shared::oom_hook::hook
 HandleInvalidParameter
 HeapFree
 huge_dalloc
@@ -88,6 +90,8 @@ memmove
 _platform_memmove\$VARIANT\$
 __platform_memmove\$VARIANT\$
 memset
+MessageLoop::PostTask_Helper
+MessageLoop::PostTask
 mozalloc_abort
 mozalloc_handle_oom
 moz_free
@@ -239,6 +243,10 @@ strstr
 __swrite
 TlsGetValue
 TouchBadMemory
+# NOTE(willkg): "trunc" is a prefix for a bunch of possible frames
+# so best to keep it in the prefix list where the frame is added to
+# the signature rather than dropped
+trunc
 vcruntime140\.dll@0x
 _VEC_memcpy
 _VEC_memzero
