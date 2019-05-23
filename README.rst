@@ -236,11 +236,13 @@ Release process
 5. Create a signed tag, push to github::
 
      git tag -s v0.1.0
-     git push --tags [REMOTE] master
+     git push --tags REMOTE TAGNAME
 
 6. Build::
 
      python setup.py sdist bdist_wheel
+
+   Make sure to use Python 3 with an updates ``requirements-dev.txt``.
 
 7. Upload to PyPI::
 
