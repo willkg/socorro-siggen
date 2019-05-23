@@ -2,6 +2,27 @@
 History
 =======
 
+1.0.0 (May 23rd, 2019)
+======================
+
+Bug fixes:
+
+* 1553665: Add libc to the irrelevant signatures list.
+* 1544246: add "fix_missing_module" pass to signature generation
+* 1550028: Switch to crash-stats.mozilla.org
+* 1544449: Fix NoteXPCOMChild class name.
+* Update docs
+* 1541090: add __clear_cache to prefix list
+* 1541474: add real_drop_in_place to prefix list
+* Add MessageLoop::PostTask and MessageLoop::PostTask_Helper to skip list (#4831)
+* 1523968: add trunc to prefix list
+* Add gkrust_shared::oom_hook::hook to the prefix list.
+* 1520615: add schedule_class_load and SkyLight to irrelevant list
+* Add alloc::raw_vec::capacity_overflow to the prefix list
+* Drop support for Python 2.7 and 3.4
+* Add Code of Conduct and links
+
+
 0.2.1 (January 4th, 2019)
 =========================
 
