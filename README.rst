@@ -25,16 +25,38 @@ with::
 Basic use
 =========
 
-You can use socorro-siggen as a command line::
+Use it on the command line for signature generation debugging
+-------------------------------------------------------------
+
+You can generate a JSON output of the signature result from the command line::
 
     $ signify <JSONFILE>
     SIGNATURE HERE
 
-
 Alternatively::
 
     $ cat <JSONFILE> | signify
+    SIGNATURE HERE
 
+You can pass in a ``--verbose`` flag and get verbose output about how the
+signature was generated.
+
+You can generate a JSONFILE to pass into signify using crash ids from Crash
+Stats::
+
+    $ fetch-data CRASHID > crash.json
+
+You can fetch crash data from Crash Stats, generate a signature, and get some
+output as to whether it matches the signature for that crash report in Crash
+Stats::
+
+    $ signature CRASHID
+
+This helps when adjusting siglist and fixing signature generation problems.
+
+
+Use it as a library
+-------------------
 
 You can use socorro-siggen as a library::
 

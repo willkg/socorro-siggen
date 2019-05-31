@@ -48,7 +48,7 @@ set SOCORRO_API_TOKEN in the environment.
 """
 
 # FIXME(willkg): This hits production. We might want it configurable.
-API_URL = 'https://crash-stats.mozilla.com/api'
+API_URL = 'https://crash-stats.mozilla.org/api'
 
 
 def printerr(s, **kwargs):

@@ -24,10 +24,18 @@ def main():
     )
     args = parser.parse_args()
 
-    generator = SignatureGenerator(debug=args.verbose)
+    generator = SignatureGenerator()
 
     crash_data = json.loads(sys.stdin.read())
 
-    ret = generator.generate(crash_data)
+    result = generator.generate(crash_data)
+    if args.verbose:
+        for item in result.debug_log:
+            print(item)
 
-    print(json.dumps(ret, indent=2))
+    return_dict = {
+        'signature': result.signature,
+        'proto_signature': result.extra.get('proto_signature', ''),
+        'notes': result.notes
+    }
+    print(json.dumps(return_dict, indent=2))
