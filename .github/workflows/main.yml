@@ -34,3 +34,9 @@ jobs:
 
     - name: Run tests
       run: pytest
+
+    - name: Test commands
+      run: |
+        signify --help
+        fetch-data --help
+        signature --help
