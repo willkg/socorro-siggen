@@ -156,8 +156,7 @@ change*. Once you are ready, click *Propose file change*.
 That will create a branch in your fork of the siggen project, and take you to
 the commit you just created. You can verify that the changes you made are
 correct, and then click *Create pull request*, and then *Create pull request*
-again. Once the pull request is opened, `Circle CI
-<https://circleci.com/gh/willkg/socorro-siggen>`_ will automatically start
+again. Once the pull request is opened, GitHub Actions will automatically start
 running our test suite, which includes sanity checks for those signature lists.
 You can see the status of those tests in the pull request, and click the
 *Details* link to see logs in case of a failure.
