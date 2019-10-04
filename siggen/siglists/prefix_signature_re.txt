@@ -10,12 +10,16 @@
 Abort
 .*abort
 .*alloc_impl
+Allocator<T>::malloc
 alloc::oom::default_oom_handler
 alloc::oom::oom
 alloc::raw_vec::capacity_overflow
 _alloca_probe
 __android_log_assert
 arena_
+avx::memset16
+avx::memset32
+BaseAllocator
 BaseGetNamedObjectDirectory
 __clear_cache
 .*calloc
@@ -89,6 +93,7 @@ _MD_
 memcmp
 __memcmp16
 memcpy
+__memcpy.*
 memmove
 _platform_memmove\$VARIANT\$
 __platform_memmove\$VARIANT\$
@@ -119,6 +124,7 @@ mozilla::ipc::RPCChannel::Call
 mozilla::ipc::RPCChannel::CxxStackFrame::CxxStackFrame
 mozilla::ipc::RPCChannel::EnteredCxxStack
 mozilla::ipc::RPCChannel::Send
+mozilla::ipc::WriteIPDLParam
 mozilla::layers::CompositorD3D11::Failed
 mozilla::layers::CompositorD3D11::HandleError
 mozilla::SpinEventLoopUntil<T>
@@ -130,6 +136,7 @@ MOZ_CrashOOL
 MOZ_CrashPrintf
 msvcr120\.dll@0x
 \<name omitted\>
+neon::memset32
 NP_Shutdown
 (NS_)?(Lossy)?(Copy|Append|Convert).*UTF
 nsACString_internal::Assign
@@ -176,6 +183,7 @@ PLDHashTable::
 PL_
 port_
 PORT_
+portable::memset32
 _PR_
 PR_
 .*ProcessNextEvent
@@ -203,6 +211,9 @@ send
 setjmp
 sigblock
 sigprocmask
+sk_memset32
+sk_memset32_dither
+SK_OPTS_NS::memset32
 SocketAccept
 SocketAcceptRead
 SocketAvailable
@@ -222,6 +233,8 @@ SocketSync
 SocketTransmitFile
 SocketWrite
 SocketWritev
+sse2::memset32
+sse2::memsetT<T>
 ssl_
 SSL_
 std::alloc::rust_oom
@@ -256,6 +269,8 @@ _VEC_memzero
 .*WaitFor
 wcslen
 wcsrtombs
+# NOTE(willkg): continue past wayland symbols
+wl_(array|proxy)_.*
 __wrap_realloc
 WSARecv
 WSASend
