@@ -2,6 +2,59 @@
 History
 =======
 
+1.0.1 (December 30th, 2019)
+===========================
+
+Bug fixes:
+
+* Bug 1604605 - Add IPDL write signatures to irrelevant list
+* Remove IPDL write stuff from prefix list
+* bug 1602344: add __forwarding_prep_0___ to prefix list
+* bug 1602343: adding ___forwarding___ to prefix list
+* bug 1602342: add -[NSObject doesNotRecognizeSelector:] to prefix list
+* bug 1601223: add moz_malloc_size_of to prefix list
+* bug 1599779: support other crashid forms in signature command
+* bug 1600951: add AllocInfo::Get<T> to prefix list
+* bug 1599506: add NXMapRemove to prefix list
+* Bug 1599222 - mozilla::ipc::IPDLParamTraits<T>::Write to the prefix signature list
+* bug 1599168: add unlink to prefix list
+* bug 1599167: add __unlink to prefix list
+* bug 1599164: add __ulock_wait to prefix list
+* bug 1599162: add __semwait_signal to prefix list
+* bug 1599157: add __cxxabiv1::failed_throw to prefix list
+* bug 1599165: add pthread_cond_signal_thread_np to prefix list
+* bug 1599156: add CALayerRelease to prefix list
+* bug 1599155: add CALayerRetain to prefix list
+* bug 1599152: add objc_retain to prefix list
+* bug 1599151: add objc_terminate to irrelevant list
+* bug 1599149: add std::terminate to irrelevant list
+* bug 1599147: add objc_exception_rethrow to prefix list
+* bug 1599146: add __cxa_rethrow to irrelevant list
+* bug 1599019: fix prefix changes to only add NSApplication
+* bug 1599019: add NSApplication functions to prefix list
+* bug 1539305: update to python 3.7.5
+* bug 1594665: add __pthread_mutex_lock to prefix list
+* bug 1594468: move libc* lines from irrelevant list to prefix list
+* bug 1592208: add more c functions to prefix list
+* bug 1590194: add mozilla::MozPromise<T>::ThenInternal to prefix list
+* bug 1590096: add more libc functions to prefix list
+* bug 1589604: add gsignal and friends to prefix list
+* bug 1588675: add strcmp implementation variations to prefix list
+* bug 1584951: add memset implementation variations to prefix list
+* bug 1584615: add objc_msgLookupSuper2 to irrelevant list
+* bug 1581800: add __memcpy.* to prefix list
+* bug 1581800: add __memcpy_sse2_unaligned_erms to prefix list
+* bug 1581517: add wayland symbols to prefix list
+* bug 1567990: fix goofy things from black reformatting
+* bug 1567990: reformat socorro/ with black
+* bug 1561697: add mozilla::ipc::WriteIPDLParam to prefix list
+* bug 1557012: add Allocator<T>::malloc to prefix list
+* Add `BaseAllocator` to the prefix signature list
+* Add support for Python 3.8
+* Fix Python 3.5 syntax issue
+* Fix bugs in signify command line
+
+
 1.0.0 (May 23rd, 2019)
 ======================
 
