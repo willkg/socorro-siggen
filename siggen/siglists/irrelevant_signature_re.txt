@@ -17,6 +17,7 @@ core\.odex@0x
 core::panicking::
 CrashReporter::TerminateHandler
 CrashStatsLogForwarder::CrashAction
+__cxa_rethrow
 __cxa_throw
 _CxxThrowException
 dalvik-heap
@@ -37,8 +38,6 @@ google_breakpad::ReceivePort::WaitForMessage
 KiFastSystemCallRet
 libandroid_runtime\.so@0x
 libbinder\.so@0x
-libc\.so(\.\d+)?@0x
-libc-\d+\.\d+(\.\d+)?\.so@0x
 libEGL\.so@
 libdvm\.so\s*@\s*0x
 libgui\.so@0x
@@ -59,6 +58,8 @@ mozilla::CondVar::Wait
 mozilla::detail::ConditionVariableImpl
 mozilla::gfx::Log<
 mozilla::ipc::RPCChannel::Call
+mozilla::ipc::WriteIPDLParam
+mozilla::ipc::IPDLParamTraits<T>::Write
 mozilla::ThreadEventQueue
 nsEventQueue::GetEvent
 _NSRaiseError
@@ -74,6 +75,7 @@ NtWaitForAlertByThreadId
 nvmap@0x
 objc_begin_catch
 objc_msgLookupSuper2
+objc_terminate
 org\.mozilla\.f.*-\d\.apk@0x
 panic_abort::
 PR_WaitCondVar
@@ -91,6 +93,7 @@ SleepConditionVariableSRW
 std::_Atomic_fetch_add_4
 std::panicking::
 std::__terminate
+std::terminate
 system@framework@.*\.jar@classes\.dex@0x
 ___TERMINATING_DUE_TO_UNCAUGHT_EXCEPTION___
 WaitForSingleObjectExImplementation
