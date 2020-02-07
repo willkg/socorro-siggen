@@ -2,6 +2,21 @@
 History
 =======
 
+1.0.2 (February 7th, 2019)
+==========================
+
+Bug fixes:
+
+* bug 1612569: improve ShutDownKill signatures
+* Bug 1612921 - Add some CString functions to the prefix list
+* Add ``servo_arc::Arc<T>::drop_slow`` to the prefix list
+* bug 1610792: add ``mozilla::DOMEventTargetHelper::AddRef`` to prefix list
+* bug 1609247: move ``__security_check_cookie`` to irrelevant list
+* Bug 1609247 - Add ``_security_check_cookie`` to the irrelevant signatures list
+* bug 1608870: added ``mozilla::ipc::Shmem`` items to prefix list
+* bug 1609121: add ``__pthread_cond_wait`` to prefix list
+
+
 1.0.1 (December 30th, 2019)
 ===========================
 
