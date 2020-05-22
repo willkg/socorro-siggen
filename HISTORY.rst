@@ -2,7 +2,26 @@
 History
 =======
 
-1.0.2 (February 7th, 2019)
+1.0.3 (May 22nd 2020)
+=====================
+
+Bug fixes:
+
+* bug 1633473: add pthread_mutex_trylock to prefix list
+* bug 1383113: switch mozilla rules to getitem notation
+* bug 1629854: add core::result::unwrap_failed to prefix list
+* bug 1626801: add RpcpRaiseException to prefix list
+* bug 1626801: move CxxThrowException to prefix list
+* bug 1626801: add CxxThrowException and friends to sig lists
+* bug 1624790: add "syscall" to prefix list
+* bug 1619606: add mozilla::CheckCheckedUnsafePtrs<T>::Check to prefix list
+* bug 1617918: fix IPC Channel Error signature generation rule
+* bug 1616837: add RustMozCrash to irrelevant list
+* bug 1612569: update signature generation docs
+* bug 1612569: fix SignatureIPCChannelError docstring
+
+
+1.0.2 (February 7th, 2020)
 ==========================
 
 Bug fixes:
