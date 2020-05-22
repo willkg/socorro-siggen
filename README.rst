@@ -264,7 +264,7 @@ Release process
 
      python setup.py sdist bdist_wheel
 
-   Make sure to use Python 3 with an updates ``requirements-dev.txt``.
+   Make sure to use Python 3 with an updated ``requirements-dev.txt``.
 
 7. Upload to PyPI::
 
