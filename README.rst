@@ -2,22 +2,22 @@
 socorro-siggen
 ==============
 
-This is an experimental extraction of the Socorro signature generation code.
+This is an extraction of the Socorro crash signature generation code.
 
 :Code: https://github.com/willkg/socorro-siggen
 :Documentation: Check the ``README.rst`` file
 :Changelog: Check the ``HISTORY.rst`` file
 :Issue tracker: https://github.com/willkg/socorro-siggen/issues
 :License: MPLv2
-:Status: Alpha
-:Community Participation Guidelines: `Guidelines <https://github.com/mozilla-services/antenna/blob/master/CODE_OF_CONDUCT.md>`_
+:Status: Stable
+:Community Participation Guidelines: `<https://github.com/willkg/socorro-siggen/blob/master/CODE_OF_CONDUCT.md>`_
 
 
 Installing
 ==========
 
-socorro-siggen is available on `PyPI <https://pypi.org>`_. You can install it
-with::
+socorro-siggen is available on `PyPI <https://pypi.org/project/siggen/>`_. You
+can install it with::
 
     $ pip install siggen
 
