@@ -3,10 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import importlib
+from unittest import mock
 
-import mock
-
-from . import WHATEVER
 
 # NOTE(willkg): We do this so that we can extract signature generation into its
 # own namespace as an external library. This allows the tests to run if it's in
@@ -29,7 +27,7 @@ class TestSignatureGenerator:
         ]
 
     def test_failing_rule(self):
-        class BadRule(object):
+        class BadRule:
             pass
 
         generator_obj = generator.SignatureGenerator(pipeline=[BadRule()])
@@ -43,7 +41,7 @@ class TestSignatureGenerator:
     def test_error_handler(self):
         exc_value = Exception("Cough")
 
-        class BadRule(object):
+        class BadRule:
             def predicate(self, crash_data, result):
                 raise exc_value
 
@@ -58,7 +56,7 @@ class TestSignatureGenerator:
         assert error_handler.call_args_list == [
             mock.call(
                 {"uuid": "ou812"},
-                exc_info=(Exception, exc_value, WHATEVER),
+                exc_info=(Exception, exc_value, mock.ANY),
                 extra={"rule": "BadRule"},
             )
         ]

@@ -9,6 +9,8 @@
 .*CrashAtUnhandlableOOM
 Abort
 .*abort
+__abi_WinRTraiseCOMException
+__abi_WinRTraiseException
 __aeabi_memcpy4
 __aeabi_memcpy
 __aeabi_memmove
@@ -38,15 +40,18 @@ _chkstk
 __chk_fail
 CleanupPerAppKey
 ConditionVariableFallback::wait\(.*\)
+core::ops::function::Fn::call<T>
 core::option::expect_failed
+core::option::expect_none_failed
 core::ptr::drop_in_place
 core::ptr::real_drop_in_place
-core::result::unwrap_failed<T>
+core::result::unwrap_failed
 core::slice::slice_index_order_fail
 core::str::slice_error_fail
 CrashInJS
 CreateFileMappingA
 __cxxabiv1::failed_throw
+CxxThrowException
 __delayLoadHelper2
 dlmalloc
 dlmalloc_trim
@@ -144,6 +149,7 @@ mozalloc_handle_oom
 moz_free
 moz_malloc_size_of
 mozilla::AndroidBridge::AutoLocalJNIFrame::~AutoLocalJNIFrame
+mozilla::CheckCheckedUnsafePtrs<T>::Check
 mozilla::CondVar::
 mozilla::detail::ConditionVariableImpl::
 mozilla::detail::HashTable<.*>::
@@ -156,6 +162,7 @@ mozilla::TimeStamp::Now
 mozilla::detail::MutexImpl::
 mozilla::detail::nsStringRepr::First
 mozilla::detail::nsStringRepr::Last
+mozilla::detail::SupportCheckedUnsafePtrImpl<T>::~SupportCheckedUnsafePtrImpl
 mozilla::ipc::LogicError
 mozilla::ipc::MessageChannel::AssertWorkerThread
 mozilla::ipc::MessageChannel::Call
@@ -243,10 +250,13 @@ _pthread_cond_wait
 __pthread_cond_wait
 pthread_cond_signal_thread_np
 pthread_mutex_lock
+pthread_mutex_trylock
 __pthread_kill
 __pthread_mutex_lock
 _purecall
 raise
+RpcpRaiseException
+RpcRaiseException
 realloc
 recv
 .*ReentrantMonitor::Wait
@@ -311,6 +321,7 @@ _platform_strlen
 strncpy
 strzcmp16
 strstr
+syscall
 __swrite
 TlsGetValue
 TouchBadMemory
