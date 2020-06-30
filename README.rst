@@ -10,7 +10,7 @@ This is an extraction of the Socorro crash signature generation code.
 :Issue tracker: https://github.com/willkg/socorro-siggen/issues
 :License: MPLv2
 :Status: Stable
-:Community Participation Guidelines: `<https://github.com/willkg/socorro-siggen/blob/master/CODE_OF_CONDUCT.md>`_
+:Community Participation Guidelines: `<https://github.com/willkg/socorro-siggen/blob/main/CODE_OF_CONDUCT.md>`_
 
 
 Installing
