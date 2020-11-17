@@ -7,6 +7,7 @@ History
 
 Bug fixes:
 
+* Add support for Python 3.9 (#55)
 * Drop support for Python 3.5 (#54)
 
 
