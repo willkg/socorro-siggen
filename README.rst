@@ -30,11 +30,6 @@ Use it on the command line for signature generation debugging
 
 You can generate a JSON output of the signature result from the command line::
 
-    $ signify <JSONFILE>
-    SIGNATURE HERE
-
-Alternatively::
-
     $ cat <JSONFILE> | signify
     SIGNATURE HERE
 
