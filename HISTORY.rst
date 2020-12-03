@@ -2,13 +2,28 @@
 History
 =======
 
-1.0.4 (in development)
-======================
+1.0.4 (December 3rd, 2020)
+==========================
 
 Bug fixes:
 
 * Add support for Python 3.9 (#55)
 * Drop support for Python 3.5 (#54)
+* bug 1676900: add ``std::io::stdio::_eprint`` to irrelevant list
+* bug 1672386: add ``nsTSubstring<T>::Append`` to prefix list
+* bug 1668381: add ``_XReply`` to irrelevant list
+* bug 1667734: add frames to irrelevant and prefix lists
+* bug 1667741: add Windows heap failure error handling to irrelevant list
+* bug 1665791: add ``mozilla::UniquePtr<T>::reset`` to the prefix list
+* bug 1667335: add ``std::_Func_impl_no_alloc<T>::_Do_call`` to the prefix list
+* bug 1662720: add ``*$VARIANT$*`` symbols to irrelevant list
+* bug 1660050: add ``NS_QuickSort`` to prefix list
+* bug 1658729: add ``mozilla::TaskController::GetRunnableForMTTask`` to the prefix list
+* bug 1651336: add ``mozilla::detail::nsTStringRepr<T>::`` to prefix list
+* bug 1649774: add ``mozilla::detail::nsTStringRepr<T>::Equals`` to prefix list
+* bug 1646675: add ``FindElementCommon`` to prefix list
+* bug 1644234: add ``libart.so`` to prefix list
+* bug 1640942: improve rust OOM signatures
 
 
 1.0.3 (May 22nd 2020)
@@ -16,18 +31,18 @@ Bug fixes:
 
 Bug fixes:
 
-* bug 1633473: add pthread_mutex_trylock to prefix list
+* bug 1633473: add ``pthread_mutex_trylock`` to prefix list
 * bug 1383113: switch mozilla rules to getitem notation
-* bug 1629854: add core::result::unwrap_failed to prefix list
-* bug 1626801: add RpcpRaiseException to prefix list
-* bug 1626801: move CxxThrowException to prefix list
-* bug 1626801: add CxxThrowException and friends to sig lists
-* bug 1624790: add "syscall" to prefix list
-* bug 1619606: add mozilla::CheckCheckedUnsafePtrs<T>::Check to prefix list
+* bug 1629854: add ``core::result::unwrap_failed`` to prefix list
+* bug 1626801: add ``RpcpRaiseException`` to prefix list
+* bug 1626801: move ``CxxThrowException`` to prefix list
+* bug 1626801: add ``CxxThrowException`` and friends to sig lists
+* bug 1624790: add ``syscall`` to prefix list
+* bug 1619606: add ``mozilla::CheckCheckedUnsafePtrs<T>::Check`` to prefix list
 * bug 1617918: fix IPC Channel Error signature generation rule
-* bug 1616837: add RustMozCrash to irrelevant list
+* bug 1616837: add ``RustMozCrash`` to irrelevant list
 * bug 1612569: update signature generation docs
-* bug 1612569: fix SignatureIPCChannelError docstring
+* bug 1612569: fix ``SignatureIPCChannelError`` docstring
 
 
 1.0.2 (February 7th, 2020)
