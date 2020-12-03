@@ -64,6 +64,7 @@ fastzero_I
 __fdelt_chk
 __fdelt_warn
 _files_getaddrinfo
+FindElementCommon
 .*free
 __fortify_fail
 __fortify_fail_abort
@@ -82,7 +83,10 @@ __GI_memcpy
 __GI_strlen
 gkrust_shared::oom_hook::hook
 gsignal
+handle_errorf
+handle_response
 HandleInvalidParameter
+hashbrown::raw::RawTable<T>::new_uninitialized<T>
 HeapFree
 huge_dalloc
 huge_palloc
@@ -115,6 +119,7 @@ __libc_android_abort
 __libc_message
 libc\.so(\.\d+)?@0x
 libc-\d+\.\d+(\.\d+)?\.so@0x
+libart\.so@0x
 libobjc.A.dylib@0x1568.
 (libxul\.so|xul\.dll|XUL)@0x
 LL_
@@ -139,8 +144,6 @@ __memmove_avx_unaligned_erms
 __memmove_avx_unaligned
 __memmove_ssse3_back
 __memmove_ssse3
-_platform_memmove\$VARIANT\$
-__platform_memmove\$VARIANT\$
 memset
 MessageLoop::PostTask_Helper
 MessageLoop::PostTask
@@ -153,6 +156,7 @@ mozilla::CheckCheckedUnsafePtrs<T>::Check
 mozilla::CondVar::
 mozilla::detail::ConditionVariableImpl::
 mozilla::detail::HashTable<.*>::
+mozilla::detail::nsTStringRepr<T>::
 mozilla::DOMEventTargetHelper::AddRef
 mozilla::MozPromise<T>::ThenCommand<T>::Track
 mozilla::MozPromise<T>::ThenInternal
@@ -179,6 +183,7 @@ mozilla::ipc::IToplevelProtocol::ShmemCreated
 mozilla::layers::CompositorD3D11::Failed
 mozilla::layers::CompositorD3D11::HandleError
 mozilla::SpinEventLoopUntil<T>
+mozilla::TaskController::GetRunnableForMTTask
 mozilla::WrapNotNull<
 mozilla.*FatalError
 moz_xmalloc
@@ -214,8 +219,10 @@ nsThread::nsChainedEventQueue::GetEvent
 [-+]\[NSException raise(:format:(arguments:)?)?\]
 nsInterfaceHashtable<.*>::
 nsINode::Slots
+nsTSubstring<T>::Append
 nsJSThingHashtable<.*>::
 nsObjCExceptionLogAbort
+NS_QuickSort
 nsRefPtr
 NSS
 nss
@@ -300,6 +307,7 @@ SSL_
 __stack_chk_fail
 std::alloc::rust_oom
 std::_Allocate
+std::_Func_impl_no_alloc<T>::_Do_call
 std::_Hash<T>::
 std::list<.*>::
 std::collections::hash::map::
@@ -349,6 +357,7 @@ zzz_AsmCodeRange_
 .*DebugAbort
 mozilla::ipc::MessageChannel::~MessageChannel
 mozilla::MakeUnique<.*>
+mozilla::UniquePtr<T>::reset
 
 # Always continue for .dll files
 .*\.dll
