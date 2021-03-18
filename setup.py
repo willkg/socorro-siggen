@@ -35,6 +35,7 @@ setup(
     version=get_version(),
     description='Experimental extraction of Socorro signature generation',
     long_description=get_long_desc(),
+    long_description_content_type="text/x-rst",
     maintainer='Will Kahn-Greene',
     maintainer_email='willkg@mozilla.com',
     url='https://github.com/willkg/socorro-siggen',

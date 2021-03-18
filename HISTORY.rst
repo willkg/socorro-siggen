@@ -2,6 +2,28 @@
 History
 =======
 
+1.0.5 (March 18th, 2021)
+========================
+
+Bug fixes:
+
+* Add markdown format to signature generation cli
+* bug 1696363: add ``env_logger`` bits to irrelevant list
+* bug 1692983: remove ``mozilla::detail::MutexImpl::unlock`` from sentinels
+* bug 1694894: add glib assertion bits to irrelevant list
+* pyupgrade pass
+* bug 1687907: add more ``mozilla::detail::MutexImpl::`` sentinels
+* Fix error handling in signature cmd
+* Bug 1690034: add ``_rust_alloc_error_handler`` to irrelevant list
+* Bug 1690034 - Add Rust OOM stuff to the irrelevant signature list.
+* bug #1688249: remove lambda number from signature
+* bug 1687907: add ``mozilla::detail::MutexImpl::mutexLock`` to sentinels
+* bug 1685178: fix signature generation for unknown in dll frames
+* Force ``crashing_thread`` to be an int
+* bug 1681347: fix Linux assertion crash signatures
+* bug 1672847: normalize anonymous namespace variations
+
+
 1.0.4 (December 3rd, 2020)
 ==========================
 
