@@ -51,6 +51,10 @@ class OutputBase:
         """
         print("WARNING: %s" % line, file=sys.stderr)
 
+    def separator(self):
+        """Output a separator between two crash signature generations"""
+        pass
+
     def data(self, crash_id, old_sig, result, verbose):
         """Outputs a data point
 
@@ -79,6 +83,9 @@ class TextOutput(OutputBase):
             for item in result.debug_log:
                 print("          %s" % item)
 
+    def separator(self):
+        print("")
+
 
 class CSVOutput(OutputBase):
     def __enter__(self):
@@ -101,6 +108,29 @@ class CSVOutput(OutputBase):
         )
 
 
+class MarkdownOutput(OutputBase):
+    """Output in Markdown for use in Bugzilla and GitHub"""
+
+    def data(self, crash_id, old_sig, result, verbose):
+        print(
+            "**Crash id:** [%s](https://crash-stats.mozilla.org/report/index/%s)"
+            % (crash_id, crash_id)
+        )
+        print("**Original:** `%s`" % old_sig.replace("`", "\\`"))
+        print("**New:** `%s`" % result.signature.replace("`", "\\`"))
+        print("**Same?:** %s" % str(old_sig == result.signature))
+        print("**Notes** (%d)" % len(result.notes))
+        for note in result.notes:
+            print("* %s" % note)
+        if verbose and result.debug_log:
+            print("**Debug:** (%d)" % len(result.debug_log))
+            for note in result.debug_log:
+                print("* %s" % note)
+
+    def separator(self):
+        print("")
+
+
 def fetch(endpoint, crash_id, api_token=None):
     kwargs = {"params": {"crash_id": crash_id}}
     if api_token:
@@ -115,7 +145,9 @@ def main(argv=None):
     parser.add_argument(
         "-v", "--verbose", help="increase output verbosity", action="store_true"
     )
-    parser.add_argument("--format", help="specify output format: csv, text (default)")
+    parser.add_argument(
+        "--format", help="specify output format: csv, markdown, text (default)"
+    )
     parser.add_argument(
         "--different-only",
         dest="different",
@@ -136,6 +168,8 @@ def main(argv=None):
 
     if args.format == "csv":
         outputter = CSVOutput
+    elif args.format == "markdown":
+        outputter = MarkdownOutput
     else:
         outputter = TextOutput
 
@@ -157,8 +191,17 @@ def main(argv=None):
         return 0
 
     with outputter() as out:
-        for crash_id in crashids_iterable:
-            crash_id = parse_crashid(crash_id.strip())
+        for index, crash_id in enumerate(crashids_iterable):
+            if index > 0:
+                out.separator()
+
+            crash_id = crash_id.strip()
+            parsed_crash_id = parse_crashid(crash_id)
+            if not parsed_crash_id:
+                out.warning("Error: %r is not a valid crash id" % crash_id)
+                continue
+
+            crash_id = parsed_crash_id
 
             resp = fetch("/RawCrash/", crash_id, api_token)
             if resp.status_code == 404:
@@ -177,8 +220,8 @@ def main(argv=None):
 
             # If there's an error in the raw crash, then something is wrong--probably with the API
             # token. So print that out and exit.
-            if "error" in raw_crash:
-                out.warning("Error fetching raw crash: %s" % raw_crash["error"])
+            if "errors" in raw_crash:
+                out.warning("Error fetching raw crash: %s" % raw_crash["errors"])
                 return 1
 
             resp = fetch("/ProcessedCrash/", crash_id, api_token)
@@ -198,9 +241,9 @@ def main(argv=None):
 
             # If there's an error in the processed crash, then something is wrong--probably with the
             # API token. So print that out and exit.
-            if "error" in processed_crash:
+            if "errors" in processed_crash:
                 out.warning(
-                    "Error fetching processed crash: %s" % processed_crash["error"]
+                    "Error fetching processed crash: %s" % processed_crash["errors"]
                 )
                 return 1
 

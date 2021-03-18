@@ -8,6 +8,7 @@
 @0x[0-9a-fA-F]{2,}
 @0x[1-9a-fA-F]
 __aeabi_fcmpgt
+alloc::alloc::__alloc_error_handler::__rg_oom
 alloc::alloc::handle_alloc_error
 ashmem
 __assert_rtn
@@ -25,10 +26,17 @@ dalvik-jit-code-cache
 dalvik-LinearAlloc
 dalvik-mark-stack
 data@app@org\.mozilla\.f.*-\d\.apk@classes\.dex@0x
+<env_logger::Logger as log::Log>::log::{{closure}}
+<env_logger::Logger as log::Log>::log
 exp2
 .*FNODOBFM
 framework\.odex@0x
 __fixunsdfsi
+__GI___assert_fail
+g_assertion_message
+g_assertion_message.cold
+g_assertion_message_error
+g_assertion_message_expr
 gdk_x_error
 _gdk_x11_display_error_event
 GetLCIDFromLangListNodeWithLICCheck
@@ -55,6 +63,7 @@ libMali\.so@0x
 libutils\.so@0x
 libz\.so@0x
 linux-gate\.so@0x
+log::__private_api_log
 mach_msg
 _mach_msg
 mach_msg_trap
@@ -92,6 +101,8 @@ panic_abort::
 PR_WaitCondVar
 RaiseException
 RealMsgWaitFor
+_rust_alloc_error_handler
+__rust_alloc_error_handler
 rust_oom
 rtc::FatalMessage
 RtlReportCriticalFailure

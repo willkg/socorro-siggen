@@ -172,6 +172,15 @@ class TestCSignatureTool:
                 "23",  # noqa
                 "mozilla::jni::GlobalRef<T>::operator=",
             ),
+            # Normalize anonymous namespace
+            ("`anonymous namespace'::foo", "23", "(anonymous namespace)::foo"),
+            ("(anonymous namespace)::foo", "23", "(anonymous namespace)::foo"),
+            # Normalize lambda numbers
+            (
+                "ShutdownWorkThreads::$_52::__invoke",
+                "23",
+                "ShutdownWorkThreads::$::__invoke",
+            ),
         ],
     )
     def test_normalize_cpp_function(self, function, line, expected):
