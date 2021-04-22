@@ -1,6 +1,5 @@
 DEFAULT_GOAL := help
 PROJECT=siggen
-BLACKVERSION=py36
 
 .PHONY: help
 help:

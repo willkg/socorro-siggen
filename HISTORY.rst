@@ -2,6 +2,14 @@
 History
 =======
 
+1.0.6 (In development)
+======================
+
+Bug fixes:
+
+* Drop support for Python 3.6 (#70)
+
+
 1.0.5 (March 18th, 2021)
 ========================
 
