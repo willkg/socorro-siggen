@@ -20,7 +20,7 @@ def main():
     """Takes crash data via stdin and generates a Socorro signature"""
     parser = argparse.ArgumentParser(description=DESCRIPTION)
     parser.add_argument(
-        '-v', '--verbose', help='increase output verbosity', action='store_true'
+        "-v", "--verbose", help="increase output verbosity", action="store_true"
     )
     args = parser.parse_args()
 
@@ -34,8 +34,8 @@ def main():
             print(item)
 
     return_dict = {
-        'signature': result.signature,
-        'proto_signature': result.extra.get('proto_signature', ''),
-        'notes': result.notes
+        "signature": result.signature,
+        "proto_signature": result.extra.get("proto_signature", ""),
+        "notes": result.notes,
     }
     print(json.dumps(return_dict, indent=2))
