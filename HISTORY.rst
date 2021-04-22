@@ -2,12 +2,17 @@
 History
 =======
 
-1.0.6 (In development)
-======================
+1.0.6 (April 22nd, 2021)
+========================
 
 Bug fixes:
 
+* Add ``__repr__`` to Result class (#68)
 * Drop support for Python 3.6 (#70)
+* bug 1706075: add Windows functions to prefix list
+* bug 1699492: fix mutation issues in signature generation
+* bug 1705027: add ``NS_CycleCollectorSuspect3`` to prefix list
+* bug 1702984: add ``std::vector<T>::_Emplace_reallocate<T>`` to the prefix list
 
 
 1.0.5 (March 18th, 2021)
