@@ -250,7 +250,9 @@ def main(argv=None):
             old_signature = processed_crash["signature"]
             crash_data = convert_to_crash_data(raw_crash, processed_crash)
 
+            print(crash_data)
             result = generator.generate(crash_data)
+            print(crash_data)
 
             if not args.different or old_signature != result.signature:
                 out.data(crash_id, old_signature, result, args.verbose)
