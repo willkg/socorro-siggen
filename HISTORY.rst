@@ -2,6 +2,28 @@
 History
 =======
 
+1.0.7 (October 18th, 2021)
+==========================
+
+Bug fixes:
+
+* bug 1733907: add glib functions to irrelevant list
+* bug 1733910: add ``ERROR_NOT_ENOUGH_MEMORY`` as OOM indicator
+* bug 1732662: add ``mozilla::detail::InvalidArrayIndex_CRASH`` to prefix list
+* bug 1731972: add ``__GI___pthread_mutex_lock`` to irrelevant list
+* bug 1727149: back out shutdownkill signature changes
+* bug 1728738: add windows guard stack functions to irrelevant list
+* bug 1730463: add ``mozilla::widget::WlCrashHandler`` to irrelevant list
+* bug 1723474: look at reason for OOM indicator
+* bug 1723465: add more windows symbols to irrelevant list
+* bug 1716611: add pthreads_kill to prefix list
+* bug 1715747: add Windows fastfail frames to irrelevant list
+* bug 1716742: mark ``last_error_value`` ``ERROR_COMMITMENT_LEVEL`` as OOM
+* bug 1720162: fix error in signature command
+* Bug 1715634 - add ``get_fpsr`` to the irrelevant signature list
+* Add support for Python 3.10 (#74)
+
+
 1.0.6 (April 22nd, 2021)
 ========================
 
