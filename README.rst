@@ -183,6 +183,9 @@ This is the schema for the crash data structure::
                                        // minidump through minidump-stackwalk. If you're not
                                        // using minidump-stackwalk, you can ignore this.
 
+    reason: <string>,                  // Optional, The crash_info type value. This can indicate
+                                       // the crash was a OOM.
+
     moz_crash_reason: <string>,        // Optional, This is the MOZ_CRASH_REASON value. This
                                        // doesn't affect anything unless the value is
                                        // "MOZ_RELEASE_ASSERT(parentBuildID == childBuildID)".
