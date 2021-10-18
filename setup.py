@@ -35,6 +35,7 @@ EXTRAS_REQUIRE = {
         "pytest==6.2.5",
         "setuptools==58.2.0",
         "tox==3.24.4",
+        "tox-gh-actions==2.8.1",
         "twine==3.4.2",
         "wheel==0.37.0",
     ]
