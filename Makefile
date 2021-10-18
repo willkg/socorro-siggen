@@ -20,3 +20,11 @@ lint:  ## Lint files
 .PHONY: test
 test:  ## Run tests
 	tox
+
+.PHONY: checkrot
+checkrot:  ## Check package rot for dev dependencies
+	python -m venv ./tmpvenv/
+	./tmpvenv/bin/pip install -U pip
+	./tmpvenv/bin/pip install '.[dev]'
+	./tmpvenv/bin/pip list -o
+	rm -rf ./tmpvenv/

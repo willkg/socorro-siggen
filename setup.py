@@ -22,12 +22,24 @@ def get_version():
     return re.search(vsre, version_file, re.M).group(1)
 
 
-install_requires = [
+INSTALL_REQUIRES = [
     "glom",
     "requests",
     "six",
     "ujson",
 ]
+EXTRAS_REQUIRE = {
+    "dev": [
+        "check-manifest==0.47",
+        "flake8==4.0.1",
+        "pytest==6.2.5",
+        "setuptools==58.2.0",
+        "tox==3.24.4",
+        "tox-gh-actions==2.8.1",
+        "twine==3.4.2",
+        "wheel==0.37.0",
+    ]
+}
 
 
 setup(
@@ -42,7 +54,8 @@ setup(
     license="Mozilla Public License v2",
     packages=find_packages(),
     include_package_data=True,
-    install_requires=install_requires,
+    install_requires=INSTALL_REQUIRES,
+    extras_require=EXTRAS_REQUIRE,
     python_requires=">=3.7",
     entry_points="""
         [console_scripts]
@@ -57,6 +70,7 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: Implementation :: CPython",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],

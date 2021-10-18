@@ -21,6 +21,10 @@ can install it with::
 
     $ pip install siggen
 
+Install for hacking::
+
+    $ pip install -e '.[dev]'
+
 
 Basic use
 =========
@@ -183,6 +187,9 @@ This is the schema for the crash data structure::
                                        // minidump through minidump-stackwalk. If you're not
                                        // using minidump-stackwalk, you can ignore this.
 
+    reason: <string>,                  // Optional, The crash_info type value. This can indicate
+                                       // the crash was a OOM.
+
     moz_crash_reason: <string>,        // Optional, This is the MOZ_CRASH_REASON value. This
                                        // doesn't affect anything unless the value is
                                        // "MOZ_RELEASE_ASSERT(parentBuildID == childBuildID)".
@@ -246,21 +253,39 @@ That produces this output::
 Release process
 ===============
 
-1. Create branch
-2. Update version and release date in ``siggen/__init__.py``
-3. Update ``HISTORY.rst``
-4. Push the branch, create a PR, review it, merge it
-5. Create a signed tag, push to github::
+1. Create branch from main tip.
+2. Check to make sure ``setup.py`` has updated versions of things.
+
+   Update dev dependencies: ``make checkrot``
+
+3. Update version and release date in ``siggen/__init__.py``.
+
+   1. Set ``__version__`` to something like ``1.0.0`` (use semver).
+   2. Set ``__releasedate__`` to something like ``20211018``.
+
+4. Update ``HISTORY.rst``.
+
+   1. Set the date for the release.
+   2. Make sure to note any backwards incompatible changes.
+
+5. Verify correctness.
+
+   1. Check manifest: ``check-manifest``
+   2. Run tests: ``make test``
+
+6. Push the branch, create a PR, review it, merge it.
+7. Create a signed tag, push to github::
 
      git tag -s v0.1.0
-     git push --tags REMOTE TAGNAME
 
-6. Build::
+   Copy details from ``HISTORY.rst`` into tag comment.
 
+8. Update PyPI::
+
+     rm -rf dist/*
      python setup.py sdist bdist_wheel
-
-   Make sure to use Python 3 with an updated ``requirements-dev.txt``.
-
-7. Upload to PyPI::
-
      twine upload dist/*
+
+9. Push everything::
+
+     git push --tags origin main
