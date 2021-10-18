@@ -13,6 +13,8 @@ from .utils import (
     collapse,
     drop_bad_characters,
     drop_prefix_and_return_type,
+    get_crashing_thread,
+    override_values,
     parse_source_file,
 )
 
@@ -508,12 +510,6 @@ class SignatureGenerationRule(Rule):
             frame_signatures_list.append(normalized_frame)
         return frame_signatures_list
 
-    def _get_crashing_thread(self, crash_data):
-        try:
-            return int(crash_data.get("crashing_thread", 0))
-        except (TypeError, ValueError):
-            return 0
-
     def action(self, crash_data, result):
         # If this is a Java crash, then generate a Java signature
         if crash_data.get("java_stack_trace"):
@@ -530,13 +526,7 @@ class SignatureGenerationRule(Rule):
 
         result.debug(self.name, "using CSignatureTool")
         try:
-            # First, we need to figure out which thread to look at. If it's a
-            # chrome hang (1), then use thread 0. Otherwise, use the crashing
-            # thread specified in the crash data.
-            if crash_data.get("hang_type", None) == 1:
-                crashing_thread = 0
-            else:
-                crashing_thread = self._get_crashing_thread(crash_data)
+            crashing_thread = get_crashing_thread(crash_data)
 
             # If we have a thread to look at, pull the frames for that.
             # Otherwise we don't have frames to use.
@@ -578,6 +568,7 @@ class OOMSignature(Rule):
 
     """
 
+    # Fragments that are in the signature that indicate this is an OOM
     signature_fragments = (
         "NS_ABORT_OOM",
         "mozalloc_handle_oom",
@@ -585,6 +576,18 @@ class OOMSignature(Rule):
         "AutoEnterOOMUnsafeRegion",
         "alloc::oom::oom",
     )
+
+    # These reason values indicate an OOM
+    oom_reason = [
+        "STATUS_FATAL_MEMORY_EXHAUSTION",
+        "STATUS_NO_MEMORY",
+    ]
+
+    # These last_error_value values indicate an OOM
+    oom_last_error_value = [
+        "ERROR_COMMITMENT_LIMIT",
+        "ERROR_NOT_ENOUGH_MEMORY",
+    ]
 
     def predicate(self, crash_data, result):
         if crash_data.get("oom_allocation_size"):
@@ -597,6 +600,20 @@ class OOMSignature(Rule):
         for a_signature_fragment in self.signature_fragments:
             if a_signature_fragment in signature:
                 return True
+
+        # Check the last_error_value of the crashing thread to see if it's
+        # ERROR_COMMITMENT_LIMIT which indicates this is an OOM
+        crashing_thread = get_crashing_thread(crash_data)
+        thread = glom(crash_data, "threads.%d" % crashing_thread, default={})
+        if thread:
+            last_error_value = thread.get("last_error_value", "")
+            if last_error_value in self.oom_last_error_value:
+                return True
+
+        # Check the reason to see if it's one of a few values that indicate an OOM
+        reason = crash_data.get("reason", None)
+        if reason in self.oom_reason:
+            return True
 
         return False
 
@@ -727,24 +744,24 @@ class StackwalkerErrorSignatureRule(Rule):
         return True
 
 
-class SignatureRunWatchDog(SignatureGenerationRule):
+class SignatureRunWatchDog(Rule):
     """Prepends "shutdownhang" to signature for shutdown hang crashes."""
+
+    def __init__(self):
+        super().__init__()
+        self.signature_generation_rule = SignatureGenerationRule()
 
     def predicate(self, crash_data, result):
         return "RunWatchdog" in result.signature
 
-    def _get_crashing_thread(self, crash_data):
-        # Always use thread 0 in this case, because that's the thread that
-        # was hanging when the software was artificially crashed.
-        return 0
-
     def action(self, crash_data, result):
-        # For shutdownhang crashes, we need to use thread 0 instead of the
-        # crashing thread. The reason is because those crashes happen
-        # artificially when thread 0 gets stuck. So whatever the crashing
-        # thread is, we don't care about it and only want to know what was
-        # happening in thread 0 when it got stuck.
-        ret = super().action(crash_data, result)
+        # For shutdownhang crashes, we need to use thread 0 instead of the crashing
+        # thread. The reason is because those crashes happen artificially when thread 0
+        # gets stuck. So whatever the crashing thread is, we don't care about it and
+        # only want to know what was happening in thread 0 when it got stuck.
+        with override_values(crash_data, {"crashing_thread": 0}) as crash_data:
+            ret = self.signature_generation_rule.action(crash_data, result)
+
         result.set_signature(self.name, f"shutdownhang | {result.signature}")
         return ret
 
@@ -804,13 +821,9 @@ class SignatureJitCategory(Rule):
 
 
 class SignatureIPCChannelError(Rule):
-    """Either stomp on or prepend signature for IPCError
+    """Stomps on signature with shutdownkill signature
 
-    If the IPCError is a ShutDownKill, then this prepends the signature with
-    "IPCError-browser | ShutDownKill".
-
-    Otherwise it stomps on the signature with "IPCError-browser/content" and the error
-    message.
+    Either "IPCError-browser | ShutDownKill" or "IPCError-content | ShutDownKill".
 
     """
 
@@ -824,12 +837,7 @@ class SignatureIPCChannelError(Rule):
             new_sig = "IPCError-content | {}"
         new_sig = new_sig.format(crash_data["ipc_channel_error"][:100])
 
-        if crash_data["ipc_channel_error"] == "ShutDownKill":
-            # If it's a ShutDownKill, append the rest of the signature
-            result.info(self.name, "IPC Channel Error prepended")
-            new_sig = f"{new_sig} | {result.signature}"
-        else:
-            result.info(self.name, "IPC Channel Error stomped on signature")
+        result.info(self.name, "IPC Channel Error stomped on signature")
 
         result.set_signature(self.name, new_sig)
         return True

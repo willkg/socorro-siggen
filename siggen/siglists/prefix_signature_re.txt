@@ -81,11 +81,11 @@ gfxPlatform::Init
 __GI___strlen_sse2
 __GI_memcpy
 __GI_strlen
-gkrust_shared::oom_hook::hook
 gsignal
 handle_errorf
 handle_response
 HandleInvalidParameter
+hashbrown::raw::Fallibility::alloc_err
 hashbrown::raw::RawTable<T>::new_uninitialized<T>
 HeapFree
 huge_dalloc
@@ -114,8 +114,6 @@ JS_DHashTableOperate
 JS_NewStringCopyZ
 js_strlen
 KiFastSystemCall
-KiRaiseUserExceptionDispatcher
-KiUserExceptionDispatcher
 kill
 __libc_android_abort
 __libc_message
@@ -158,7 +156,9 @@ mozilla::CheckCheckedUnsafePtrs<T>::Check
 mozilla::CondVar::
 mozilla::detail::ConditionVariableImpl::
 mozilla::detail::HashTable<.*>::
+mozilla::detail::InvalidArrayIndex_CRASH
 mozilla::detail::nsTStringRepr<T>::
+mozilla::dom::ToJSValue
 mozilla::DOMEventTargetHelper::AddRef
 mozilla::MozPromise<T>::ThenCommand<T>::Track
 mozilla::MozPromise<T>::ThenInternal
@@ -262,6 +262,7 @@ pthread_cond_signal_thread_np
 pthread_mutex_lock
 pthread_mutex_trylock
 __pthread_kill
+pthread_kill
 __pthread_mutex_lock
 _purecall
 raise

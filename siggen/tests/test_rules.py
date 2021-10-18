@@ -1147,6 +1147,68 @@ class TestOOMSignature:
         rule = rules.OOMSignature()
         assert rule.predicate(crash_data, result) is True
 
+    @pytest.mark.parametrize(
+        "crashdata, expected",
+        [
+            ({}, False),
+            ({"crashing_thread": 5}, False),
+            ({"crashing_thread": 5, "threads": []}, False),
+            (
+                {
+                    "crashing_thread": 0,
+                    "threads": [
+                        {
+                            "last_error_value": "FOO",
+                        },
+                    ],
+                },
+                False,
+            ),
+            (
+                {
+                    "crashing_thread": 0,
+                    "threads": [
+                        {
+                            "last_error_value": "ERROR_COMMITMENT_LIMIT",
+                        },
+                    ],
+                },
+                True,
+            ),
+            (
+                {
+                    "crashing_thread": 0,
+                    "threads": [
+                        {
+                            "last_error_value": "ERROR_NOT_ENOUGH_MEMORY",
+                        },
+                    ],
+                },
+                True,
+            ),
+        ],
+    )
+    def test_predicate_error_commitment_limit(self, crashdata, expected):
+        result = generator.Result()
+        result.signature = "Text"
+        rule = rules.OOMSignature()
+        assert rule.predicate(crashdata, result) is expected
+
+    @pytest.mark.parametrize(
+        "reason, expected",
+        [
+            ("FOO", False),
+            ("STATUS_NO_MEMORY", True),
+            ("STATUS_FATAL_MEMORY_EXHAUSTION", True),
+        ],
+    )
+    def test_predicate_reason(self, reason, expected):
+        crash_data = {"reason": reason}
+        result = generator.Result()
+        result.signature = "Text"
+        rule = rules.OOMSignature()
+        assert rule.predicate(crash_data, result) is expected
+
     def test_action_success(self):
         crash_data = {}
         result = generator.Result()
@@ -1355,14 +1417,6 @@ class TestStackwalkerErrorSignatureRule:
 
 
 class TestSignatureWatchDogRule:
-    def test_instantiation(self):
-        srwd = rules.SignatureRunWatchDog()
-
-        assert isinstance(srwd.c_signature_tool, rules.CSignatureTool)
-        assert isinstance(srwd.java_signature_tool, rules.JavaSignatureTool)
-
-        assert srwd._get_crashing_thread({}) == 0
-
     def test_predicate(self):
         srwd = rules.SignatureRunWatchDog()
 
@@ -1485,25 +1539,6 @@ class TestSignatureIPCChannelError:
         assert result.notes == [
             "SignatureIPCChannelError: IPC Channel Error stomped on signature"
         ]
-
-    def test_shutdownkill(self):
-        rule = rules.SignatureIPCChannelError()
-
-        original_signature = "foo::bar"
-        crash_data = {
-            "ipc_channel_error": "ShutDownKill",
-            "additional_minidumps": "browser",
-        }
-        result = generator.Result()
-        result.signature = original_signature
-
-        action_result = rule.action(crash_data, result)
-        assert action_result is True
-
-        assert result.signature == "IPCError-browser | ShutDownKill | {}".format(
-            original_signature
-        )
-        assert result.notes == ["SignatureIPCChannelError: IPC Channel Error prepended"]
 
 
 class TestSignatureShutdownTimeout:

@@ -33,19 +33,25 @@ exp2
 framework\.odex@0x
 __fixunsdfsi
 __GI___assert_fail
+__GI___pthread_mutex_lock
 g_assertion_message
 g_assertion_message.cold
 g_assertion_message_error
 g_assertion_message_expr
 gdk_x_error
 _gdk_x11_display_error_event
+get_fpsr
 GetLCIDFromLangListNodeWithLICCheck
 gfxPlatform::GetPlatform
 gkrust_shared::oom_hook::hook
 _g_log_abort
+g_log
+g_log_default_handler
+g_log_structured
 g_log_structured_array
 g_log_structured_standard
 g_log_writer_default
+g_logv
 google_breakpad::CrashGenerationClient::RequestDumpForException
 google_breakpad::ExceptionHandler::SignalHandler
 google_breakpad::ExceptionHandler::WriteMinidumpWithException
@@ -72,6 +78,7 @@ mnt@asec@org\.mozilla\.f.*-\d@pkg\.apk@classes\.dex@0x
 MOZ_Assert
 MOZ_Crash
 mozalloc_handle_oom
+mozglue_static::oom_hook::hook
 mozglue_static::panic_hook
 mozcrt19.dll@0x
 mozilla::CondVar::Wait
@@ -81,6 +88,7 @@ mozilla::ipc::RPCChannel::Call
 mozilla::ipc::WriteIPDLParam
 mozilla::ipc::IPDLParamTraits<T>::Write
 mozilla::ThreadEventQueue
+mozilla::widget::WlCrashHandler
 nsEventQueue::GetEvent
 _NSRaiseError
 nsThread::GetEvent
@@ -101,6 +109,8 @@ panic_abort::
 PR_WaitCondVar
 RaiseException
 RealMsgWaitFor
+_report_gsfailure
+__report_gsfailure
 _rust_alloc_error_handler
 __rust_alloc_error_handler
 rust_oom
@@ -127,10 +137,12 @@ std::_Atomic_fetch_add_4
 std::alloc::rust_oom
 std::io::stdio::_eprint
 std::panicking::
+std::sys_common::backtrace::__rust_end_short_backtrace<T>
 std::__terminate
 std::terminate
 system@framework@.*\.jar@classes\.dex@0x
 ___TERMINATING_DUE_TO_UNCAUGHT_EXCEPTION___
+
 # These frames have platform variants and bucket poorly so we nix them
 # from the signature
 .*\$VARIANT\$
@@ -140,3 +152,22 @@ _XError
 _XReply
 _ZdlPv
 zero
+
+# Windows-specific fastfail frames
+KiFastSystemCall
+KiRaiseUserExceptionDispatcher
+KiUserApcDispatch
+KiUserApcDispatcher
+KiUserCallbackDispatch
+KiUserCallbackDispatcher
+KiUserExceptionDispatch
+KiUserExceptionDispatcher
+LdrpDispatchUserCallTarget
+LdrpHandleInvalidUserCallTarget
+LdrpICallHandler
+LdrpValidateUserCallTarget
+RtlDispatchException
+RtlFailFast2
+RtlpExecuteHandlerForException
+RtlpHandleInvalidUserCallTarget
+seh_filter_exe
