@@ -7,7 +7,12 @@ import csv
 import os
 import sys
 
-import requests
+try:
+    import requests
+except ImportError:
+    print("Error importing requests. You need to install the cli extras.", file=sys.stderr)
+    print("Try: pip install 'siggen[cli]'", file=sys.stderr)
+    sys.exit(1)
 
 from .generator import SignatureGenerator
 from .utils import convert_to_crash_data, parse_crashid

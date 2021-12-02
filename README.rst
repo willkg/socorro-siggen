@@ -17,13 +17,17 @@ Installing
 ==========
 
 socorro-siggen is available on `PyPI <https://pypi.org/project/siggen/>`_. You
-can install it with::
+can install for library usage with::
 
     $ pip install siggen
 
+You can install for cli usage with::
+
+    $ pip install 'siggen[cli]'
+
 Install for hacking::
 
-    $ pip install -e '.[dev]'
+    $ pip install -e '.[cli,dev]'
 
 
 Basic use
