@@ -274,7 +274,10 @@ Release process
    2. Run tests: ``make test``
 
 6. Push the branch, create a PR, review it, merge it.
-7. Create a signed tag, push to github::
+
+7. Check out and update main branch locally.
+
+8. Tag the release::
 
      git tag -s v0.1.0
 
