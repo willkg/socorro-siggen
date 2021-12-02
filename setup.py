@@ -25,8 +25,6 @@ def get_version():
 INSTALL_REQUIRES = [
     "glom",
     "requests",
-    "six",
-    "ujson",
 ]
 EXTRAS_REQUIRE = {
     "dev": [
