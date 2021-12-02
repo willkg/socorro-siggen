@@ -9,7 +9,12 @@ import json
 import os
 import sys
 
-import requests
+try:
+    import requests
+except ImportError:
+    print("Error importing requests. You need to install the cli extras.", file=sys.stderr)
+    print("Try: pip install 'siggen[cli]'", file=sys.stderr)
+    sys.exit(1)
 
 from .utils import convert_to_crash_data
 
@@ -41,6 +46,11 @@ class WrappedTextHelpFormatter(argparse.HelpFormatter):
         return "\n\n".join(parts)
 
 
+def printerr(s, **kwargs):
+    kwargs["file"] = sys.stderr
+    print(s, **kwargs)
+
+
 DESCRIPTION = """
 Takes a crash id via the command line, pulls down the crash information, and
 outputs JSON for signature generation.
@@ -51,11 +61,6 @@ set SOCORRO_API_TOKEN in the environment.
 
 # FIXME(willkg): This hits production. We might want it configurable.
 API_URL = "https://crash-stats.mozilla.org/api"
-
-
-def printerr(s, **kwargs):
-    kwargs["file"] = sys.stderr
-    print(s, **kwargs)
 
 
 def fetch(endpoint, crash_id, api_token=None):

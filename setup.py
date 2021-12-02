@@ -24,11 +24,11 @@ def get_version():
 
 INSTALL_REQUIRES = [
     "glom",
-    "requests",
-    "six",
-    "ujson",
 ]
 EXTRAS_REQUIRE = {
+    "cli": [
+        "requests<3",
+    ],
     "dev": [
         "check-manifest==0.47",
         "flake8==4.0.1",

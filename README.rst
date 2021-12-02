@@ -17,13 +17,17 @@ Installing
 ==========
 
 socorro-siggen is available on `PyPI <https://pypi.org/project/siggen/>`_. You
-can install it with::
+can install for library usage with::
 
     $ pip install siggen
 
+You can install for cli usage with::
+
+    $ pip install 'siggen[cli]'
+
 Install for hacking::
 
-    $ pip install -e '.[dev]'
+    $ pip install -e '.[cli,dev]'
 
 
 Basic use
@@ -274,7 +278,10 @@ Release process
    2. Run tests: ``make test``
 
 6. Push the branch, create a PR, review it, merge it.
-7. Create a signed tag, push to github::
+
+7. Check out and update main branch locally.
+
+8. Tag the release::
 
      git tag -s v0.1.0
 
