@@ -33,10 +33,10 @@ EXTRAS_REQUIRE = {
         "check-manifest==0.47",
         "flake8==4.0.1",
         "pytest==6.2.5",
-        "setuptools==58.2.0",
+        "setuptools==59.5.0",
         "tox==3.24.4",
         "tox-gh-actions==2.8.1",
-        "twine==3.4.2",
+        "twine==3.7.0",
         "wheel==0.37.0",
     ]
 }
