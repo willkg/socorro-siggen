@@ -8,6 +8,18 @@ History
 Bug fixes:
 
 * Removed ``siggen.VERSION``. Use ``siggen.__version__`` instead. (#83)
+* Remove ujson and six dependencies (#80)
+* Remove requests dependency by default. You'll need to install the ``cli`` extras which cover installing required dependencies for scripts. (#80)
+
+  ::
+
+     pip install 'siggen[cli]'
+  
+* bug 1743487: remove ``total_frames`` from socorro
+* bug 1737691: skip processing for 0-byte dump files
+* bug 1741764: add ``RaiseFailFastException`` to prefix list
+* bug 1737691: add new ``MinidumpStackwalkRule``
+* bug 1737878: return normalized frames in signature result
 
 
 1.0.7 (October 18th, 2021)
