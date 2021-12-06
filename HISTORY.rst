@@ -2,6 +2,14 @@
 History
 =======
 
+1.0.8 (December 6th, 2021)
+==========================
+
+Bug fixes:
+
+* Removed ``siggen.VERSION``. Use ``siggen.__version__`` instead. (#83)
+
+
 1.0.7 (October 18th, 2021)
 ==========================
 
