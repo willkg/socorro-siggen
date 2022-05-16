@@ -16,6 +16,7 @@ from .utils import (
     get_crashing_thread,
     override_values,
     parse_source_file,
+    strip_leading_zeros,
 )
 
 
@@ -198,10 +199,10 @@ class CSignatureTool:
     ):
         """Normalizes a single frame
 
-        Returns a structured conglomeration of the input parameters to serve as
-        a signature. The parameter names of this function reflect the exact
-        names of the fields from the jsonMDSW frame output. This allows this
-        function to be invoked by passing a frame as ``**a_frame``.
+        Returns a structured conglomeration of the input parameters to serve as a
+        signature. The parameter names of this function reflect the exact names of the
+        fields from the JSON MDSW frame output. This allows this function to be invoked
+        by passing a frame as ``**a_frame``.
 
         """
         if function:
@@ -224,12 +225,12 @@ class CSignatureTool:
 
         # If there's an offset and no module/module_offset, use that
         if not module and not module_offset and offset:
-            return f"@{offset}"
+            return f"@{strip_leading_zeros(offset)}"
 
         # Return module/module_offset
-        return "{}@{}".format(module or "", module_offset)
+        return "{}@{}".format(module or "", strip_leading_zeros(module_offset))
 
-    def generate(self, source_list, hang_type=0, crashed_thread=None, delimiter=" | "):
+    def generate(self, source_list, crashed_thread=None, delimiter=" | "):
         """Iterate over frames in the crash stack and generate a signature.
 
         First, we look for a sentinel frame and if we find one, we start with that.
@@ -294,15 +295,6 @@ class CSignatureTool:
                 break
 
             debug_notes.append(f'prefix; continue iterating: "{a_signature}"')
-
-        # Add a special marker for hang crash reports.
-        if hang_type:
-            debug_notes.append(
-                "hang_type {}: prepending {}".format(
-                    hang_type, self.hang_prefixes[hang_type]
-                )
-            )
-            new_signature_list.insert(0, self.hang_prefixes[hang_type])
 
         signature = delimiter.join(new_signature_list)
 
@@ -544,7 +536,6 @@ class SignatureGenerationRule(Rule):
 
         signature, notes, debug_notes = self.c_signature_tool.generate(
             signature_list,
-            crash_data.get("hang_type"),
             crash_data.get("crashing_thread"),
         )
 
@@ -807,22 +798,6 @@ class SignatureShutdownTimeout(Rule):
         return True
 
 
-class SignatureJitCategory(Rule):
-    """Replaces signature with JIT classification."""
-
-    def predicate(self, crash_data, result):
-        return bool(crash_data.get("jit_category"))
-
-    def action(self, crash_data, result):
-        result.info(
-            self.name,
-            'Signature replaced with a JIT Crash Category, was: "%s"',
-            result.signature,
-        )
-        result.set_signature(self.name, "jit | {}".format(crash_data["jit_category"]))
-        return True
-
-
 class SignatureIPCChannelError(Rule):
     """Stomps on signature with shutdownkill signature
 
@@ -834,14 +809,13 @@ class SignatureIPCChannelError(Rule):
         return bool(crash_data.get("ipc_channel_error"))
 
     def action(self, crash_data, result):
-        if crash_data.get("additional_minidumps") == "browser":
+        minidumps = crash_data.get("additional_minidumps") or []
+        if "upload_file_minidump_browser" in minidumps:
             new_sig = "IPCError-browser | {}"
         else:
             new_sig = "IPCError-content | {}"
         new_sig = new_sig.format(crash_data["ipc_channel_error"][:100])
-
         result.info(self.name, "IPC Channel Error stomped on signature")
-
         result.set_signature(self.name, new_sig)
         return True
 

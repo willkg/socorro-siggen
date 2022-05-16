@@ -81,15 +81,15 @@ class TestCSignatureTool:
         """test_normalize: bunch of variations"""
         s = self.setup_config_c_sig_tool()
         a = [
-            (("module", "", "source/", "23", "0xFFF"), "source#23"),
-            (("module", "", "source\\", "23", "0xFFF"), "source#23"),
-            (("module", "", "/a/b/c/source", "23", "0xFFF"), "source#23"),
-            (("module", "", "\\a\\b\\c\\source", "23", "0xFFF"), "source#23"),
-            (("module", "", "\\a\\b\\c\\source", "23", "0xFFF"), "source#23"),
-            (("module", "", "\\a\\b\\c\\source", "", "0xFFF"), "module@0xFFF"),
-            (("module", "", "", "23", "0xFFF"), "module@0xFFF"),
-            (("module", "", "", "", "0xFFF"), "module@0xFFF"),
-            ((None, "", "", "", "0xFFF"), "@0xFFF"),
+            (("module", "", "source/", "23", "0xfff"), "source#23"),
+            (("module", "", "source\\", "23", "0xfff"), "source#23"),
+            (("module", "", "/a/b/c/source", "23", "0xfff"), "source#23"),
+            (("module", "", "\\a\\b\\c\\source", "23", "0xfff"), "source#23"),
+            (("module", "", "\\a\\b\\c\\source", "23", "0xfff"), "source#23"),
+            (("module", "", "\\a\\b\\c\\source", "", "0xfff"), "module@0xfff"),
+            (("module", "", "", "23", "0xfff"), "module@0xfff"),
+            (("module", "", "", "", "0xfff"), "module@0xfff"),
+            ((None, "", "", "", "0xfff"), "@0xfff"),
             # Make sure frame normalization uses the right function: normalize
             # Rust frame (has a Rust fingerprint)
             (
@@ -98,7 +98,7 @@ class TestCSignatureTool:
                     "expect_failed::h7f635057bfba806a",
                     "hg:hg.mozilla.org/a/b:servio/wrapper.rs:44444444444",
                     "23",
-                    "0xFFF",
+                    "0xfff",
                 ),
                 "expect_failed",
             ),
@@ -229,25 +229,6 @@ class TestCSignatureTool:
         sig, notes, debug_notes = s.generate(a)
         assert sig == "d | e | f | g"
 
-    def test_generate_2(self):
-        """test_generate_2: hang"""
-        s = self.setup_config_c_sig_tool(ig=["a", "b", "c"], pr=["d", "e", "f"])
-        a = list("abcdefghijklmnopqrstuvwxyz")
-        sig, notes, debug_notes = s.generate(a, hang_type=-1)
-        assert sig == "hang | d | e | f | g"
-
-        a = list("abcdaeafagahijklmnopqrstuvwxyz")
-        sig, notes, debug_notes = s.generate(a, hang_type=-1)
-        assert sig == "hang | d | e | f | g"
-
-        a = list("abcdaeafagahijklmnopqrstuvwxyz")
-        sig, notes, debug_notes = s.generate(a, hang_type=0)
-        assert sig == "d | e | f | g"
-
-        a = list("abcdaeafagahijklmnopqrstuvwxyz")
-        sig, notes, debug_notes = s.generate(a, hang_type=1)
-        assert sig == "chromehang | d | e | f | g"
-
     def test_generate_2a(self):
         """test_generate_2a: way too long"""
         s = self.setup_config_c_sig_tool(ig=["a", "b", "c"], pr=["d", "e", "f"])
@@ -264,15 +245,6 @@ class TestCSignatureTool:
             "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg"
         )
         sig, notes, debug_notes = s.generate(a)
-        assert sig == expected
-        expected = (
-            "hang | "
-            "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd | "
-            "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee | "
-            "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff | "
-            "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg"
-        )
-        sig, notes, debug_notes = s.generate(a, hang_type=-1)
         assert sig == expected
 
     def test_generate_3(self):
@@ -1472,42 +1444,6 @@ class TestSignatureWatchDogRule:
         assert result.notes == []
 
 
-class TestSignatureJitCategory:
-    def test_predicate_no_match(self):
-        rule = rules.SignatureJitCategory()
-
-        crash_data = {}
-        result = {"signature": "", "notes": []}
-        assert rule.predicate(crash_data, result) is False
-
-        crash_data = {"jit_category": ""}
-        result = {"signature": "", "notes": []}
-
-        assert rule.predicate(crash_data, result) is False
-
-    def test_predicate(self):
-        rule = rules.SignatureJitCategory()
-
-        crash_data = {"jit_category": "JIT Crash"}
-        result = {"signature": "", "notes": []}
-
-        assert rule.predicate(crash_data, result) is True
-
-    def test_action_success(self):
-        rule = rules.SignatureJitCategory()
-
-        crash_data = {"jit_category": "JIT Crash"}
-        result = generator.Result()
-        result.signature = "foo::bar"
-
-        action_result = rule.action(crash_data, result)
-        assert action_result is True
-        assert result.signature == "jit | JIT Crash"
-        assert result.notes == [
-            'SignatureJitCategory: Signature replaced with a JIT Crash Category, was: "foo::bar"'
-        ]
-
-
 class TestSignatureIPCChannelError:
     def test_predicate_no_match(self):
         rule = rules.SignatureIPCChannelError()
@@ -1545,7 +1481,7 @@ class TestSignatureIPCChannelError:
         ]
 
         # Now test with a browser crash.
-        crash_data["additional_minidumps"] = "browser"
+        crash_data["additional_minidumps"] = ["upload_file_minidump_browser"]
         result = generator.Result()
         result.signature = original_signature
 
