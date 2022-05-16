@@ -22,22 +22,15 @@ def get_crashing_thread(crash_data):
     """
     Takes crash data and returns the crashing thread as an int.
 
-    If it's a chrome hang (hang_type=1), then use thread 0. Otherwise, use the crashing
-    thread specified in the crash data.
-
     :arg crash_data: crash data structure that conforms to the schema
 
     :returns: crashing thread as an int
 
     """
-    crashing_thread = 0
-    if crash_data.get("hang_type", None) != 1:
-        try:
-            crashing_thread = int(crash_data.get("crashing_thread", 0))
-        except (TypeError, ValueError):
-            pass
-
-    return crashing_thread
+    try:
+        return int(crash_data.get("crashing_thread", 0))
+    except (TypeError, ValueError):
+        return 0
 
 
 DOES_NOT_EXIST = object()
@@ -64,13 +57,11 @@ def override_values(crash_data, values):
     yield crash_data
 
 
-def convert_to_crash_data(raw_crash, processed_crash):
+def convert_to_crash_data(processed_crash):
     """
-    Takes a raw crash and a processed crash (these are Socorro-centric
-    data structures) and converts them to a crash data structure used
-    by signature generation.
+    Takes a processed crash (these are Socorro-centric data structures) and converts
+    them to a crash data structure used by signature generation.
 
-    :arg raw_crash: raw crash data from Socorro
     :arg processed_crash: processed crash data from Socorro
 
     :returns: crash data structure that conforms to the schema
@@ -87,32 +78,31 @@ def convert_to_crash_data(raw_crash, processed_crash):
         "reason": glom(processed_crash, "json_dump.crash_info.type", default=None),
         # list of CStackTrace or None
         "threads": glom(processed_crash, "json_dump.threads", default=None),
-        # int or None
-        "hang_type": glom(processed_crash, "hang_type", default=None),
         # text or None
         "os": glom(processed_crash, "json_dump.system_info.os", default=None),
         # int or None
         "oom_allocation_size": int_or_none(
-            glom(raw_crash, "OOMAllocationSize", default=None)
+            glom(processed_crash, "oom_allocation_size", default=None)
         ),
         # text or None
-        "abort_message": glom(raw_crash, "AbortMessage", default=None),
+        "abort_message": glom(processed_crash, "abort_message", default=None),
         # text or None
         "mdsw_status_string": glom(processed_crash, "mdsw_status_string", default=None),
         # text json with "phase", "conditions" (complicated--see code) or None
-        "async_shutdown_timeout": glom(raw_crash, "AsyncShutdownTimeout", default=None),
-        # text or None
-        "jit_category": glom(
-            processed_crash, "classifications.jit.category", default=None
+        "async_shutdown_timeout": glom(
+            processed_crash, "async_shutdown_timeout", default=None
         ),
         # text or None
-        "ipc_channel_error": glom(raw_crash, "ipc_channel_error", default=None),
+        "ipc_channel_error": glom(processed_crash, "ipc_channel_error", default=None),
         # text or None
-        "ipc_message_name": glom(raw_crash, "IPCMessageName", default=None),
+        "ipc_message_name": glom(processed_crash, "ipc_message_name", default=None),
         # text
         "moz_crash_reason": glom(processed_crash, "moz_crash_reason", default=None),
-        # text; comma-delimited e.g. "browser,flash1,flash2"
-        "additional_minidumps": glom(raw_crash, "additional_minidumps", default=""),
+        # list of str; for example:
+        # ["upload_file_minidump_browser", "upload_file_minidump_flash1"]
+        "additional_minidumps": glom(
+            processed_crash, "additional_minidumps", default=[]
+        ),
         # pull out the original signature if there was one
         "original_signature": glom(processed_crash, "signature", default=""),
     }
@@ -404,3 +394,22 @@ def parse_crashid(item):
             crash_id = path.split("/")[-1]
             if is_crash_id_valid(crash_id):
                 return crash_id
+
+
+def strip_leading_zeros(text):
+    """Strips leading zeros from a hex string.
+
+    Example:
+
+    >>> strip_leading_zeros("0x0000000000032ec0")
+    "0x32ec0"
+
+    :param text: the text to strip leading zeros from
+
+    :returns: stripped text
+
+    """
+    try:
+        return hex(int(text, base=16))
+    except (ValueError, TypeError):
+        return text
