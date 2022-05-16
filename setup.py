@@ -30,15 +30,14 @@ EXTRAS_REQUIRE = {
         "requests<3",
     ],
     "dev": [
-        "check-manifest==0.47",
+        "check-manifest==0.48",
         "flake8==4.0.1",
-        "pytest==6.2.5",
-        "setuptools==59.5.0",
-        "tox==3.24.4",
-        "tox-gh-actions==2.8.1",
-        "twine==3.7.0",
-        "wheel==0.37.0",
-    ]
+        "pytest==7.1.2",
+        "tox==3.25.0",
+        "tox-gh-actions==2.9.1",
+        "twine==4.0.0",
+        "wheel==0.37.1",
+    ],
 }
 
 
