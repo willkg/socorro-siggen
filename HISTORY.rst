@@ -2,16 +2,30 @@
 History
 =======
 
+1.0.20220802 (In development)
+=============================
+
+FIXME: update date when released
+
+Bug fixes:
+
+* Removed ``siggen.__releasedate__``. We'll include the date in the versions going
+  forward.
+* Moved dev requirements into ``requirements-dev.txt`` file.
+
+
 1.0.9 (August 2nd, 2022)
 ========================
 
 Bug fixes:
 
-* bug 1764570: update to fillmore 0.1.1; drop capture_error
-* Bug 1777954 - Adjust regular expressions matching Android, Linux and macOS libraries that changed
+* bug 1764570: update to fillmore 0.1.1; drop ``capture_error``
+* Bug 1777954 - Adjust regular expressions matching Android, Linux and macOS
+  libraries that changed
 * Bug 1777954 - Removed obsolete entries in the prefix and irrelevant lists
-* Bug 1777954 - Reorganize signatures containing implementations of common library functions
-* bug 1774110: add mozilla::dom::AutoJSAPI::Init to prefix list
+* Bug 1777954 - Reorganize signatures containing implementations of common
+  library functions
+* bug 1774110: add ``mozilla::dom::AutoJSAPI::Init`` to prefix list
 * bug 1767279: fix license headers in python files
 
 
