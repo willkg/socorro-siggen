@@ -1,6 +1,6 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 from itertools import islice
 import json
@@ -31,8 +31,11 @@ def join_ignore_empty(delimiter, list_of_strings):
 class Rule:
     """Base class for Signature generation rules"""
 
-    def __init__(self):
-        self.name = self.__class__.__name__
+    @property
+    def name(self):
+        # NOTE(willkg): In order for this to work in siggen and in Socorro, we can't
+        # include the Python module path
+        return self.__class__.__name__
 
     def predicate(self, crash_data, result):
         """Whether or not to run this rule
