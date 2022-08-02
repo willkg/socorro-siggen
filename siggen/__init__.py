@@ -3,8 +3,5 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# yyyymmdd
-__releasedate__ = "20220802"
-
-# x.y.z or x.y.z.dev0 -- semver
-__version__ = "1.0.9"
+# x.y.YYYYMMDD or x.y.YYYYMMDD.dev0 -- semver
+__version__ = "1.0.20220802"

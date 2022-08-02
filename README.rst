@@ -27,7 +27,7 @@ You can install for cli usage with::
 
 Install for hacking::
 
-    $ pip install -e '.[cli,dev]'
+    $ pip install -r requirements-dev.txt
 
 
 Basic use
@@ -252,47 +252,3 @@ That produces this output::
       "proto_signature": "SomeFunc | SomeOtherFunc",
       "signature": "SomeFunc"
     }
-
-
-Release process
-===============
-
-1. Create branch from main tip.
-2. Check to make sure ``setup.py`` has updated versions of things.
-
-   Update dev dependencies: ``make checkrot``
-
-3. Update version and release date in ``siggen/__init__.py``.
-
-   1. Set ``__version__`` to something like ``1.0.0`` (use semver).
-   2. Set ``__releasedate__`` to something like ``20211018``.
-
-4. Update ``HISTORY.rst``.
-
-   1. Set the date for the release.
-   2. Make sure to note any backwards incompatible changes.
-
-5. Verify correctness.
-
-   1. Check manifest: ``check-manifest``
-   2. Run tests: ``make test``
-
-6. Push the branch, create a PR, review it, merge it.
-
-7. Check out and update main branch locally.
-
-8. Tag the release::
-
-     git tag -s v0.1.0
-
-   Copy details from ``HISTORY.rst`` into tag comment.
-
-8. Update PyPI::
-
-     rm -rf dist/*
-     python setup.py sdist bdist_wheel
-     twine upload dist/*
-
-9. Push everything::
-
-     git push --tags origin main
