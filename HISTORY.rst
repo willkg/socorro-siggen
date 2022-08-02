@@ -2,6 +2,19 @@
 History
 =======
 
+1.0.9 (August 2nd, 2022)
+========================
+
+Bug fixes:
+
+* bug 1764570: update to fillmore 0.1.1; drop capture_error
+* Bug 1777954 - Adjust regular expressions matching Android, Linux and macOS libraries that changed
+* Bug 1777954 - Removed obsolete entries in the prefix and irrelevant lists
+* Bug 1777954 - Reorganize signatures containing implementations of common library functions
+* bug 1774110: add mozilla::dom::AutoJSAPI::Init to prefix list
+* bug 1767279: fix license headers in python files
+
+
 1.0.8 (December 6th, 2021)
 ==========================
 
@@ -9,7 +22,8 @@ Bug fixes:
 
 * Removed ``siggen.VERSION``. Use ``siggen.__version__`` instead. (#83)
 * Remove ujson and six dependencies (#80)
-* Remove requests dependency by default. You'll need to install the ``cli`` extras which cover installing required dependencies for scripts. (#80)
+* Remove requests dependency by default. You'll need to install the ``cli``
+  extras which cover installing required dependencies for scripts. (#80)
 
   ::
 
