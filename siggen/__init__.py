@@ -4,4 +4,4 @@
 
 
 # x.y.YYYYMMDD or x.y.YYYYMMDD.dev0 -- semver
-__version__ = "1.0.20220802"
+__version__ = "1.0.20220909"
