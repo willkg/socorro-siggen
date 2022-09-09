@@ -129,6 +129,6 @@ def main():
         printerr("Error fetching processed crash: %s" % processed_crash["error"])
         return 1
 
-    crash_data = convert_to_crash_data(raw_crash, processed_crash)
+    crash_data = convert_to_crash_data(processed_crash)
 
     print(json.dumps(crash_data, indent=2))
