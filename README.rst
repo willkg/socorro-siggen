@@ -30,6 +30,22 @@ Install for hacking::
     $ pip install -r requirements-dev.txt
 
 
+Versioning
+==========
+
+siggen is an extraction of the signature generation code in Socorro. If you are
+running signature generation on crash data and you want signatures to match
+equivalent crash reports in Socorro, then you need to keep siggen up-to-date.
+
+siggen uses a calver scheme:
+
+MAJOR.MINOR.yyyymmdd
+
+* MAJOR: indicates incompatible API changes
+* MINOR: indicates changes that are backwards-compatible
+* yyyymmdd: the release date
+
+
 Basic use
 =========
 
