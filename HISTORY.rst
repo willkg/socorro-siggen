@@ -2,16 +2,21 @@
 History
 =======
 
-1.0.20220802 (In development)
-=============================
-
-FIXME: update date when released
+1.0.20220909 (September 9th, 2022)
+==================================
 
 Bug fixes:
 
 * Removed ``siggen.__releasedate__``. We'll include the date in the versions going
   forward.
 * Moved dev requirements into ``requirements-dev.txt`` file.
+* Fix signify to convert processed crash (#91)
+* Fix fetch-data TypeError (#90)
+* Switch to calver (#95)
+* bug 1787933: exorcise flash from the codebase
+* bug 1733904: add "bad hardware" to signature for STATUS_DEVICE_DATA_ERROR
+* Bug 1784464 - Add Android's compiler builtin functions to the irrelevant
+  function list
 
 
 1.0.9 (August 2nd, 2022)
