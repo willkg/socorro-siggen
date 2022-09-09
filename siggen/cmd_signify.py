@@ -9,10 +9,13 @@ import json
 import sys
 
 from .generator import SignatureGenerator
+from .utils import convert_to_crash_data
 
 
 DESCRIPTION = """
 Given a signature data structure as JSON via stdin, generates the signature.
+
+If you pass a processed crash, this will convert it.
 """
 
 
@@ -27,6 +30,13 @@ def main():
     generator = SignatureGenerator()
 
     crash_data = json.loads(sys.stdin.read())
+
+    if "json_dump" in crash_data:
+        # This is an indicator that the crash data is a processed crash and
+        # needs to be converted
+        if args.verbose:
+            print("Crash data is a processed crash. Converting ...")
+        crash_data = convert_to_crash_data(crash_data)
 
     result = generator.generate(crash_data)
     if args.verbose:

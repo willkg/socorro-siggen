@@ -36,26 +36,54 @@ Basic use
 Use it on the command line for signature generation debugging
 -------------------------------------------------------------
 
-You can generate a JSON output of the signature result from the command line::
+siggen comes with several command line tools for signature generation.
 
-    $ cat <JSONFILE> | signify
-    SIGNATURE HERE
+``signify``
+    Takes a signature generation crash data file via stdin, runs signature
+    generation, and prints the output.
 
-You can pass in a ``--verbose`` flag and get verbose output about how the
-signature was generated.
+    This is helpful for generating signatures for crash data.
 
-You can generate a JSONFILE to pass into signify using crash ids from Crash
-Stats::
+    Usage::
 
-    $ fetch-data CRASHID > crash.json
+        signify --help
 
-You can fetch crash data from Crash Stats, generate a signature, and get some
-output as to whether it matches the signature for that crash report in Crash
-Stats::
+    Example::
 
-    $ signature CRASHID
+        $ fetch-data 04e52a99-67d4-4d19-ad21-e29d10220905 > crash_data.json
+        $ cat crash_data.json | signify
 
-This helps when adjusting siglist and fixing signature generation problems.
+    If you pass in the ``--verbose`` flag, you'll get verbose output about
+    how the signature was generated.
+
+``fetch-data``
+    Downloads processed crash data from Crash Stats and converts it to the
+    signature generation crash data.
+
+    Usage::
+
+        fetch-data --help
+
+    Example::
+
+        $ fetch-data 04e52a99-67d4-4d19-ad21-e29d10220905 > crash_data.json
+
+``signature``
+    Downloads processed crash data from Crash Stats, converts it to signature
+    generation crash data format, and generates a signature.
+
+    This also tells you whether the new signature matches the old one.
+
+    This is helpful for making adjustments to the signature lists and debugging
+    signature generation problems.
+
+    Usage::
+
+        $ signature --help
+
+    Example::
+
+        $ signature 04e52a99-67d4-4d19-ad21-e29d10220905 > crash_data.json
 
 
 Use it as a library
@@ -80,16 +108,16 @@ Things to know
 
 Things to know about siggen:
 
-1. Make sure to use the latest version of siggen and update frequently.
-   We use semantic versioning, so the API will not change for MINOR
-   and PATCH releases. Feel free to restrict on the MAJOR version.
+1. Make sure to use the latest version of siggen and update frequently. We use
+   semantic versioning, so the API will not change for MINOR and PATCH
+   releases. Feel free to restrict on the MAJOR version.
 
-2. Signatures generated will change between siggen versions. The API
-   may be stable, but bug fixes and changes to the siglist files will
-   affect signature generation output. Hopefully for the better!
+2. Signatures generated will change between siggen versions. The API may be
+   stable, but bug fixes and changes to the siglist files will affect signature
+   generation output. Hopefully for the better!
 
-3. If you have problems, please open up an issue. Please include the
-   version of siggen.
+3. If you have problems, please open up an issue. Please include the version of
+   siggen.
 
    When using siggen, you can find the version like this::
 
@@ -97,10 +125,10 @@ Things to know about siggen:
        print(siggen.__version__)
 
 
-Crash data schema
-=================
+Signature generation crash data schema
+======================================
 
-This is the schema for the crash data structure::
+This is the schema for the signature generation crash data structure::
 
   {
     crashing_thread: <int or null>,    // Optional, The index of the crashing thread in threads.
