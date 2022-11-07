@@ -4,6 +4,7 @@ PROJECT=siggen
 .PHONY: help
 help:
 	@echo "Available rules:"
+	@echo ""
 	@fgrep -h "##" Makefile | fgrep -v fgrep | sed 's/\(.*\):.*##/\1:/'
 
 .PHONY: clean
@@ -15,7 +16,7 @@ clean:  ## Clean build artifacts
 
 .PHONY: lint
 lint:  ## Lint files
-	flake8 ${PROJECT}
+	tox -e py39-flake8
 
 .PHONY: test
 test:  ## Run tests
@@ -25,6 +26,6 @@ test:  ## Run tests
 checkrot:  ## Check package rot for dev dependencies
 	python -m venv ./tmpvenv/
 	./tmpvenv/bin/pip install -U pip
-	./tmpvenv/bin/pip install '.[dev]'
+	./tmpvenv/bin/pip install -r requirements-dev.txt
 	./tmpvenv/bin/pip list -o
 	rm -rf ./tmpvenv/
