@@ -198,7 +198,7 @@ class CSignatureTool:
         line=None,
         module_offset=None,
         offset=None,
-        **kwargs,
+        unloaded_modules=None,
     ):
         """Normalizes a single frame
 
@@ -227,11 +227,84 @@ class CSignatureTool:
             return f"{file}#{line}"
 
         # If there's an offset and no module/module_offset, use that
-        if not module and not module_offset and offset:
-            return f"@{strip_leading_zeros(offset)}"
+        if not module and not module_offset:
+            if unloaded_modules:
+                # Use the first unloaded module and the offset or "0"
+                unloaded_module = unloaded_modules[0]
+                unloaded_module_module = unloaded_module.get("module")
+                unloaded_module_offsets = unloaded_module.get("offsets")
+                if unloaded_module_module and unloaded_module_offsets:
+                    return "(unloaded {}@{})".format(
+                        unloaded_module_module,
+                        strip_leading_zeros(unloaded_module_offsets[0]),
+                    )
+                elif unloaded_module_module:
+                    return "(unloaded {})".format(unloaded_module_module)
+
+            if offset:
+                return f"@{strip_leading_zeros(offset)}"
 
         # Return module/module_offset
         return "{}@{}".format(module or "", strip_leading_zeros(module_offset))
+
+    def frame_generator(self, frames):
+        """Yields frames one at a time from a list of frames
+
+        Note: this treats inlines as individual frames and yields those when they're
+        available.
+
+        :arg frames: list of frame dicts
+
+        :returns: generator of frame data for normalization
+
+        """
+        for frame in frames:
+            inlines = frame.get("inlines") or []
+            for inline in inlines:
+                yield {
+                    "module": frame.get("module"),
+                    "function": inline.get("function"),
+                    "file": inline.get("file"),
+                    "line": inline.get("line"),
+                    "module_offset": frame.get("module_offset"),
+                    "offset": frame.get("offset"),
+                }
+
+            yield {
+                "module": frame.get("module"),
+                "function": frame.get("function"),
+                "file": frame.get("file"),
+                "line": frame.get("line"),
+                "module_offset": frame.get("module_offset"),
+                "offset": frame.get("offset"),
+                # NOTE(gsvelto): unloaded modules can only appear in non-inlined frames
+                "unloaded_modules": frame.get("unloaded_modules"),
+            }
+
+    def create_frame_list(self, thread_data, make_modules_lower_case=False):
+        """Takes thread data and builds a list of frames
+
+        Note: this treats inlines as individual frames.
+
+        :arg thread_data: dict of thread data
+        :arg make_modules_lower_case: whether or not to lowercase module
+
+        :returns: list of normalized frames
+
+        """
+        normalized_frames = []
+        frames = thread_data.get("frames", [])
+        for frame in islice(self.frame_generator(frames), MAXIMUM_FRAMES_TO_CONSIDER):
+            # Bug #1544246. In Rust 1.34, the panic symbols are missing the module in
+            # symbols files. This fixes that by adding the module.
+            frame = fix_missing_module(frame)
+
+            if make_modules_lower_case and frame.get("module"):
+                frame["module"] = frame["module"].lower()
+
+            normalized_frame = self.normalize_frame(**frame)
+            normalized_frames.append(normalized_frame)
+        return normalized_frames
 
     def generate(self, source_list, crashed_thread=None, delimiter=" | "):
         """Iterate over frames in the crash stack and generate a signature.
@@ -282,7 +355,10 @@ class CSignatureTool:
                 continue
 
             # If the frame signature is a dll, remove the @xxxxx part.
-            if ".dll" in a_signature.lower():
+            if (
+                not a_signature.startswith("(unloaded")
+                and ".dll" in a_signature.lower()
+            ):
                 a_signature = a_signature.split("@")[0]
 
                 # If this trimmed DLL signature is the same as the previous frame's, skip it.
@@ -306,13 +382,16 @@ class CSignatureTool:
             if crashed_thread is None:
                 notes.append("CSignatureTool: no crashing thread identified")
                 signature = "EMPTY: no crashing thread identified"
+
             else:
                 notes.append(
                     f"CSignatureTool: no frame data for crashing thread ({crashed_thread})"
                 )
-                try:
+                if source_list:
+                    # The frames were probably all irrelevant, so pick the first one.
                     signature = source_list[0]
-                except IndexError:
+                else:
+                    # There wasn't any frame data to look at.
                     signature = "EMPTY: no frame data available"
 
         return signature, notes, debug_notes
@@ -486,24 +565,6 @@ class SignatureGenerationRule(Rule):
         self.java_signature_tool = JavaSignatureTool()
         self.c_signature_tool = CSignatureTool()
 
-    def _create_frame_list(
-        self, crashing_thread_mapping, make_modules_lower_case=False
-    ):
-        frame_signatures_list = []
-        for a_frame in islice(
-            crashing_thread_mapping.get("frames", []), MAXIMUM_FRAMES_TO_CONSIDER
-        ):
-            # Bug #1544246. In Rust 1.34, the panic symbols are missing the
-            # module in symbols files. This fixes that by adding the module.
-            a_frame = fix_missing_module(a_frame)
-
-            if make_modules_lower_case and a_frame.get("module"):
-                a_frame["module"] = a_frame["module"].lower()
-
-            normalized_frame = self.c_signature_tool.normalize_frame(**a_frame)
-            frame_signatures_list.append(normalized_frame)
-        return frame_signatures_list
-
     def action(self, crash_data, result):
         # If this is a Java crash, then generate a Java signature
         if crash_data.get("java_stack_trace"):
@@ -525,7 +586,7 @@ class SignatureGenerationRule(Rule):
             # If we have a thread to look at, pull the frames for that.
             # Otherwise we don't have frames to use.
             if crashing_thread is not None:
-                signature_list = self._create_frame_list(
+                signature_list = self.c_signature_tool.create_frame_list(
                     glom(crash_data, "threads.%d" % crashing_thread, default={}),
                     crash_data.get("os") == "Windows NT",
                 )
@@ -539,7 +600,7 @@ class SignatureGenerationRule(Rule):
 
         signature, notes, debug_notes = self.c_signature_tool.generate(
             signature_list,
-            crash_data.get("crashing_thread"),
+            crashing_thread,
         )
 
         if signature_list:
@@ -555,6 +616,32 @@ class SignatureGenerationRule(Rule):
         if signature:
             result.set_signature(self.name, signature)
 
+        return True
+
+
+class StackOverflowSignature(Rule):
+    """Prepends ``stackoverflow``
+
+    See bug #1796389.
+
+    """
+
+    # These reason values indicate a stackoverflow
+    stackoverflow_reason = [
+        "EXCEPTION_STACK_OVERFLOW",
+    ]
+
+    def predicate(self, crash_data, result):
+        # Check the reason to see if it's one of a few values that indicate a
+        # stackoverflow
+        reason = crash_data.get("reason", None)
+        if reason in self.stackoverflow_reason:
+            return True
+
+        return False
+
+    def action(self, crash_data, result):
+        result.set_signature(self.name, f"stackoverflow | {result.signature}")
         return True
 
 
@@ -635,13 +722,12 @@ class BadHardware(Rule):
 
     """
 
-    # These reason values indicate an OOM
+    # These reason value substrings indicate an error caused by bad hardware
     bad_hardware_reason = [
         "STATUS_DEVICE_DATA_ERROR",
     ]
 
     def predicate(self, crash_data, result):
-        # Check the reason to see if it's one of a few values that indicate an OOM
         reason = crash_data.get("reason", None)
         if not reason:
             return False
@@ -793,7 +879,22 @@ class SignatureRunWatchDog(Rule):
 
 
 class SignatureShutdownTimeout(Rule):
-    """Replaces signature with async_shutdown_timeout message."""
+    """Replaces signature with async_shutdown_timeout message.
+
+    This supports AsyncShutdownTimeout annotation values with the following structure::
+
+        {
+            "phase": <str>,
+            "conditions": [
+                {
+                    "name": <str>,
+                    ...
+                }
+            ]
+        }
+
+
+    """
 
     def predicate(self, crash_data, result):
         return bool(crash_data.get("async_shutdown_timeout"))
@@ -802,14 +903,18 @@ class SignatureShutdownTimeout(Rule):
         parts = ["AsyncShutdownTimeout"]
         try:
             shutdown_data = json.loads(crash_data["async_shutdown_timeout"])
-            parts.append(shutdown_data["phase"])
+            if isinstance(shutdown_data.get("phase"), str):
+                parts.append(shutdown_data["phase"])
+            else:
+                parts.append("(unknown)")
+
             conditions = [
-                # NOTE(willkg): The AsyncShutdownTimeout notation condition can either be a string
-                # that looks like a "name" or a dict with a "name" in it.
+                # NOTE(willkg): The AsyncShutdownTimeout notation condition can either
+                # be a string that looks like a "name" or a dict with a "name" in it.
                 #
                 # This handles both variations.
                 c["name"] if isinstance(c, dict) else c
-                for c in shutdown_data["conditions"]
+                for c in shutdown_data.get("conditions") or []
             ]
             if conditions:
                 conditions.sort()

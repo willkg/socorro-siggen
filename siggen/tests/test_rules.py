@@ -77,10 +77,176 @@ class TestCSignatureTool:
         assert fixup_space.pattern == s.fixup_space.pattern
         assert fixup_comma.pattern == s.fixup_comma.pattern
 
-    def test_normalize_frame(self):
-        """test_normalize: bunch of variations"""
+    def test_create_frame_list(self):
+        thread_0 = {
+            "frames": [
+                {
+                    "frame": 0,
+                    "function": "NtWaitForMultipleObjects",
+                    "function_offset": "0x15",
+                    "module": "ntdll.dll",
+                    "module_offset": "0x2015d",
+                    "offset": "0x77ad015d",
+                    "trust": "context",
+                },
+                {
+                    "frame": 1,
+                    "function": "WaitForMultipleObjectsEx",
+                    "function_offset": "0xff",
+                    "module": "KERNELBASE.dll",
+                    "module_offset": "0x115f6",
+                    "offset": "0x775e15f6",
+                    "trust": "cfi",
+                },
+                {
+                    "frame": 2,
+                    "function": "WaitForMultipleObjectsExImplementation",
+                    "function_offset": "0x8d",
+                    "module": "kernel32.dll",
+                    "module_offset": "0x119f7",
+                    "offset": "0x766119f7",
+                    "trust": "cfi",
+                },
+                {
+                    "frame": 3,
+                    "function": "RealMsgWaitForMultipleObjectsEx",
+                    "function_offset": "0xe1",
+                    "module": "user32.dll",
+                    "module_offset": "0x20869",
+                    "offset": "0x77370869",
+                    "trust": "cfi",
+                },
+                {
+                    "frame": 4,
+                    "function": "MsgWaitForMultipleObjects",
+                    "function_offset": "0x1e",
+                    "module": "user32.dll",
+                    "module_offset": "0x20b68",
+                    "offset": "0x77370b68",
+                    "trust": "cfi",
+                },
+                {
+                    "file": "F_766591945_______________________________________",
+                    "frame": 5,
+                    "function": "F_1428703866________________________________",
+                    "function_offset": "0xc1",
+                    "line": 203,
+                    "module": "NPSWF32_14_0_0_125.dll",
+                    "module_offset": "0x35bf21",
+                    "offset": "0x5e39bf21",
+                    "trust": "cfi",
+                },
+            ],
+            "threads_index": 0,
+            "frame_count": 32,
+        }
+
         s = self.setup_config_c_sig_tool()
-        a = [
+        frame_signatures_list = s.create_frame_list(thread_0)
+        expected = [
+            "NtWaitForMultipleObjects",
+            "WaitForMultipleObjectsEx",
+            "WaitForMultipleObjectsExImplementation",
+            "RealMsgWaitForMultipleObjectsEx",
+            "MsgWaitForMultipleObjects",
+            "F_1428703866________________________________",
+        ]
+        assert frame_signatures_list == expected
+
+    def test_create_frame_list_with_inlines(self):
+        thread_0 = {
+            "frames": [
+                {
+                    "frame": 0,
+                    "function": "NtWaitForMultipleObjects",
+                    "function_offset": "0x15",
+                    "module": "ntdll.dll",
+                    "module_offset": "0x2015d",
+                    "offset": "0x77ad015d",
+                    "trust": "context",
+                    "inlines": None,
+                },
+                {
+                    "frame": 1,
+                    "function": "WaitForMultipleObjectsEx",
+                    "function_offset": "0xff",
+                    "module": "KERNELBASE.dll",
+                    "module_offset": "0x115f6",
+                    "offset": "0x775e15f6",
+                    "trust": "cfi",
+                    "inlines": [
+                        {
+                            "function": "inline_a",
+                            "file": "some_file.rs",
+                            "line": 59,
+                        },
+                        {
+                            "function": "inline_b",
+                            "file": "some_file.rs",
+                            "line": 299,
+                        },
+                    ],
+                },
+                {
+                    "frame": 2,
+                    "function": "WaitForMultipleObjectsExImplementation",
+                    "function_offset": "0x8d",
+                    "module": "kernel32.dll",
+                    "module_offset": "0x119f7",
+                    "offset": "0x766119f7",
+                    "trust": "cfi",
+                },
+            ],
+            "threads_index": 0,
+            "frame_count": 3,
+        }
+
+        s = self.setup_config_c_sig_tool()
+        frame_signatures_list = s.create_frame_list(thread_0)
+        expected = [
+            "NtWaitForMultipleObjects",
+            "inline_a",
+            "inline_b",
+            "WaitForMultipleObjectsEx",
+            "WaitForMultipleObjectsExImplementation",
+        ]
+        assert frame_signatures_list == expected
+
+    def test_no_mutation(self):
+        s = self.setup_config_c_sig_tool()
+        frames = {
+            "frames": [
+                {
+                    "frame": 0,
+                    "function": "NtWaitForMultipleObjects",
+                    "function_offset": "0x15",
+                    "module": "ntdll.dll",
+                    "module_offset": "0x2015d",
+                    "offset": "0x77ad015d",
+                    "trust": "context",
+                },
+                {
+                    "frame": 1,
+                    "function": "WaitForMultipleObjectsEx",
+                    "function_offset": "0xff",
+                    "module": "KERNELBASE.dll",
+                    "module_offset": "0x115f6",
+                    "offset": "0x775e15f6",
+                    "trust": "cfi",
+                },
+            ]
+        }
+        frames_copy = copy.deepcopy(frames)
+        s = self.setup_config_c_sig_tool()
+        s.create_frame_list(frames_copy)
+
+        # If they're the same, then there was no mutation
+        assert frames == frames_copy
+
+    @pytest.mark.parametrize(
+        "args, expected",
+        [
+            # module, function, file, line, module_offset, offset, unloaded_modules
             (("module", "", "source/", "23", "0xfff"), "source#23"),
             (("module", "", "source\\", "23", "0xfff"), "source#23"),
             (("module", "", "/a/b/c/source", "23", "0xfff"), "source#23"),
@@ -102,10 +268,38 @@ class TestCSignatureTool:
                 ),
                 "expect_failed",
             ),
-        ]
-        for args, e in a:
-            r = s.normalize_frame(*args)
-            assert e == r
+            # Handle normalization with unloaded modules
+            (
+                (
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    [{"module": "unmod"}],
+                ),
+                "(unloaded unmod)",
+            ),
+            (
+                (
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    [{"module": "unmod", "offsets": ["0x0000000000005387"]}],
+                ),
+                "(unloaded unmod@0x5387)",
+            ),
+        ],
+    )
+    def test_normalize_frame(self, args, expected):
+        """test_normalize: bunch of variations"""
+        s = self.setup_config_c_sig_tool()
+        ret = s.normalize_frame(*args)
+        assert expected == ret
 
     @pytest.mark.parametrize(
         "function, line, expected",
@@ -880,53 +1074,6 @@ FRAMES_FROM_JSON_DUMP_WITH_TEMPLATES_AND_SPECIAL_CASE = {
 
 
 class TestSignatureGenerationRule:
-    def test_create_frame_list(self):
-        sgr = rules.SignatureGenerationRule()
-        frame_signatures_list = sgr._create_frame_list(FRAMES_FROM_JSON_DUMP)
-        expected = [
-            "NtWaitForMultipleObjects",
-            "WaitForMultipleObjectsEx",
-            "WaitForMultipleObjectsExImplementation",
-            "RealMsgWaitForMultipleObjectsEx",
-            "MsgWaitForMultipleObjects",
-            "F_1152915508__________________________________",
-            "F2166389______________________________________",
-            "F_917831355___________________________________",
-            "F1315696776________________________________",
-            "F_1428703866________________________________",
-        ]
-        assert frame_signatures_list == expected
-
-    def test_no_mutation(self):
-        sgr = rules.SignatureGenerationRule()
-        frames = {
-            "frames": [
-                {
-                    "frame": 0,
-                    "function": "NtWaitForMultipleObjects",
-                    "function_offset": "0x15",
-                    "module": "ntdll.dll",
-                    "module_offset": "0x2015d",
-                    "offset": "0x77ad015d",
-                    "trust": "context",
-                },
-                {
-                    "frame": 1,
-                    "function": "WaitForMultipleObjectsEx",
-                    "function_offset": "0xff",
-                    "module": "KERNELBASE.dll",
-                    "module_offset": "0x115f6",
-                    "offset": "0x775e15f6",
-                    "trust": "cfi",
-                },
-            ]
-        }
-        frames_copy = copy.deepcopy(frames)
-        sgr._create_frame_list(frames_copy)
-
-        # If they're the same, then there was no mutation
-        assert frames == frames_copy
-
     def test_java_stack_trace(self):
         sgr = rules.SignatureGenerationRule()
 
@@ -1056,11 +1203,11 @@ class TestSignatureGenerationRule:
         # the call to be tested
         assert sgr.action(crash_data, result) is True
 
-        assert result.signature == "EMPTY: no crashing thread identified"
+        assert result.signature == "EMPTY: no frame data available"
         assert "proto_signature" not in result.extra
         assert "normalized_frames" not in result.extra
         assert result.notes == [
-            "SignatureGenerationRule: CSignatureTool: no crashing thread identified"
+            "SignatureGenerationRule: CSignatureTool: no frame data for crashing thread (0)"
         ]
 
     def test_lower_case_modules(self):
@@ -1100,6 +1247,38 @@ class TestSignatureGenerationRule:
         assert result.extra["proto_signature"] == expected_proto_signature
         assert result.extra["normalized_frames"] == expected_normalized_frames
         assert result.notes == []
+
+
+class TestStackOverflowSignature:
+    def test_predicate_no_match(self):
+        result = generator.Result()
+        result.signature = "hello"
+        rule = rules.StackOverflowSignature()
+        assert rule.predicate({}, result) is False
+
+    @pytest.mark.parametrize(
+        "reason, expected",
+        [
+            ("FOO", False),
+            ("EXCEPTION_STACK_OVERFLOW", True),
+        ],
+    )
+    def test_predicate_reason(self, reason, expected):
+        crash_data = {"reason": reason}
+        result = generator.Result()
+        result.signature = "Text"
+        rule = rules.StackOverflowSignature()
+        assert rule.predicate(crash_data, result) is expected
+
+    def test_action_success(self):
+        crash_data = {"reason": "EXCEPTION_STACK_OVERFLOW"}
+        result = generator.Result()
+        result.signature = "hello"
+        rule = rules.StackOverflowSignature()
+        action_result = rule.action(crash_data, result)
+
+        assert action_result is True
+        assert result.signature == "stackoverflow | hello"
 
 
 class TestOOMSignature:
@@ -1569,11 +1748,11 @@ class TestSignatureShutdownTimeout:
 
         action_result = rule.action(crash_data, result)
         assert action_result is True
-        assert result.signature == "AsyncShutdownTimeout | UNKNOWN"
+        assert result.signature == "AsyncShutdownTimeout | (unknown) | (none)"
 
         assert result.notes == [
-            "SignatureShutdownTimeout: Error parsing AsyncShutdownTimeout: 'phase'",
-            'SignatureShutdownTimeout: Signature replaced with a Shutdown Timeout signature, was: "foo"',  # noqa
+            "SignatureShutdownTimeout: Signature replaced with a Shutdown "
+            + 'Timeout signature, was: "foo"',
         ]
 
     def test_action_success(self):
@@ -1591,7 +1770,8 @@ class TestSignatureShutdownTimeout:
         assert action_result is True
         assert result.signature == "AsyncShutdownTimeout | beginning | A,B"
         assert result.notes == [
-            'SignatureShutdownTimeout: Signature replaced with a Shutdown Timeout signature, was: "foo"'  # noqa
+            "SignatureShutdownTimeout: Signature replaced with a Shutdown "
+            + 'Timeout signature, was: "foo"',
         ]
 
     def test_action_success_string_conditions(self):
@@ -1609,7 +1789,8 @@ class TestSignatureShutdownTimeout:
         assert action_result is True
         assert result.signature == "AsyncShutdownTimeout | beginning | A,B,C"
         assert result.notes == [
-            'SignatureShutdownTimeout: Signature replaced with a Shutdown Timeout signature, was: "foo"'  # noqa
+            "SignatureShutdownTimeout: Signature replaced with a Shutdown "
+            + 'Timeout signature, was: "foo"',
         ]
 
     def test_action_success_empty_conditions_key(self):
@@ -1627,7 +1808,23 @@ class TestSignatureShutdownTimeout:
         assert action_result is True
         assert result.signature == "AsyncShutdownTimeout | beginning | (none)"
         assert result.notes == [
-            'SignatureShutdownTimeout: Signature replaced with a Shutdown Timeout signature, was: "foo"'  # noqa
+            "SignatureShutdownTimeout: Signature replaced with a Shutdown "
+            + 'Timeout signature, was: "foo"',
+        ]
+
+    def test_action_unsupported_structure(self):
+        rule = rules.SignatureShutdownTimeout()
+
+        crash_data = {"async_shutdown_timeout": json.dumps({})}
+        result = generator.Result()
+        result.signature = "foo"
+
+        action_result = rule.action(crash_data, result)
+        assert action_result is True
+        assert result.signature == "AsyncShutdownTimeout | (unknown) | (none)"
+        assert result.notes == [
+            "SignatureShutdownTimeout: Signature replaced with a Shutdown "
+            + 'Timeout signature, was: "foo"',
         ]
 
 
