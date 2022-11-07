@@ -24,6 +24,7 @@ def get_version():
 
 INSTALL_REQUIRES = [
     "glom",
+    "importlib_resources",
 ]
 EXTRAS_REQUIRE = {
     "cli": [
