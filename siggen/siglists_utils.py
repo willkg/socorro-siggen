@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+from pathlib import Path
 import re
 
 import importlib_resources
@@ -27,25 +28,50 @@ class BadRegularExpressionLineError(Exception):
     """Raised when a file contains an invalid regular expression."""
 
 
-def build_filepath(source):
+class _IncludedSource:
+    def __repr__(self):
+        return "INCLUDED"
+
+    def __str__(self):
+        return "INCLUDED"
+
+
+INCLUDED = _IncludedSource()
+
+
+def get_filepath(name, source=INCLUDED):
     """Build a file path from the
 
-    :param source: the signature file name
+    :param name: the signature list name
+    :param source: where to look for the specified signature list file: ``INCLUDED`` to
+        look at included signature list files or the directory on the file system
+        as a Path or string
 
     :returns: Path to file in package
 
     """
-    package_name = ".".join(__name__.split(".")[0:-1])
-    return importlib_resources.files(package_name).joinpath(f"siglists/{source}.txt")
+    if source is INCLUDED:
+        package_name = ".".join(__name__.split(".")[0:-1])
+        return importlib_resources.files(package_name).joinpath(f"siglists/{name}.txt")
+
+    source = Path(source)
+    return source / f"{name}.txt"
 
 
-def _get_file_content(source):
+def get_signature_list_content(name, source=INCLUDED):
     """Return a tuple, each value being a line of the source file.
 
     Remove empty lines and comments (lines starting with a '#').
 
+    :param name: the signature list name
+    :param source: where to look for the specified signature list file: ``INCLUDED`` to
+        look at included signature list files or the directory on the file system
+        as a Path or string
+
+    :returns: tuple of lines from file
+
     """
-    filepath = build_filepath(source)
+    filepath = get_filepath(name, source=source)
     lines = []
 
     with filepath.open("rb") as fp:
@@ -67,9 +93,3 @@ def _get_file_content(source):
         lines = lines + _SPECIAL_EXTENDED_VALUES[source]
 
     return tuple(lines)
-
-
-IRRELEVANT_SIGNATURE_RE = _get_file_content("irrelevant_signature_re")
-PREFIX_SIGNATURE_RE = _get_file_content("prefix_signature_re")
-SIGNATURE_SENTINELS = _get_file_content("signature_sentinels")
-SIGNATURES_WITH_LINE_NUMBERS_RE = _get_file_content("signatures_with_line_numbers_re")
