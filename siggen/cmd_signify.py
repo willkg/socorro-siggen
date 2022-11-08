@@ -25,9 +25,22 @@ def main():
     parser.add_argument(
         "-v", "--verbose", help="increase output verbosity", action="store_true"
     )
+    parser.add_argument(
+        "--signature-list-dir",
+        required=False,
+        help=(
+            "directory of signature list files to use; if not specified, uses the "
+            + "included signature list files"
+        ),
+    )
     args = parser.parse_args()
 
-    generator = SignatureGenerator()
+    generator_kwargs = {}
+    if args.signature_list_dir:
+        generator_kwargs = {
+            "signature_list_dir": args.signature_list_dir,
+        }
+    generator = SignatureGenerator(**generator_kwargs)
 
     crash_data = json.loads(sys.stdin.read())
 
