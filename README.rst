@@ -124,9 +124,7 @@ Things to know
 
 Things to know about siggen:
 
-1. Make sure to use the latest version of siggen and update frequently. We use
-   semantic versioning, so the API will not change for MINOR and PATCH
-   releases. Feel free to restrict on the MAJOR version.
+1. Make sure to use the latest version of siggen and update frequently.
 
 2. Signatures generated will change between siggen versions. The API may be
    stable, but bug fixes and changes to the siglist files will affect signature
