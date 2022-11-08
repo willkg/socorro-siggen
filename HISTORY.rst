@@ -2,6 +2,44 @@
 History
 =======
 
+1.1.20221108 (November 8th, 2022)
+=================================
+
+Bug fixes:
+
+* Add --signature-list-dir argument to ``signify`` and ``signature`` commands.
+  Add ``signature_list_dir`` argument to ``SignatureGenerator``. This allows
+  you to specify an alternate directory for signature lists. (#75)
+* Add support for Python 3.11 (#98)
+* bug 1784866: remove ``pkg_resources``
+* Bug 1799433 - ``Ignore mozilla::UniquePtr<T>`` functions when generating a crash signature
+* bug 1799142: handle unsupported ``AsyncShutdownTimeout`` values
+* bug 1796389: add "stackoverflow" to signature
+* bug 1798495: add ``mozilla::Atomic<T>::Atomic`` to irrelevant list
+* Bug 1798495 - Ignore Android atomics and more functions from STL implementations when generating signatures
+* bug 1798480: add ``_guard_dispatch_icall_nop`` to irrelevant list
+* Bug 1798480 - Ignore ``guard_dispatch_icall_nop`` when generating a crash signature
+* Fix bad string interpolation in signature command
+* Bug 1798479 - Ignore the functions under ``mozilla::detail::IntrinsicMemoryOps`` when generating a signature
+* Disambiguate crashes that happen in ``mozilla::TimeStampValue::operator-``
+* bug 1746630: use unloaded modules in signature generation
+* bug 1795643: add ``nsINode::GetParentNode`` to prefix list
+* bug 1795641: add ``nsObserverService`` to prefix list
+* Bug 1794587 - Ignore most wait functions that appear in shutdown hang stacks
+* Bug 1794362 - Add ``core::sync::atomic::`` to the irrelevant list
+* Bug 1792710 - Added ``mozilla::Maybe<T>`` to the prefix list
+* Bug 1791509 - Improve handling inlined library functions
+* Add ``mozilla::OffTheBooksMutex::Lock`` to prefix list
+* Add ``alloc::alloc::handle_alloc_error`` to sentinals
+* Add ``enum$<T>::unwrap`` to prefix list
+* Also add ``core::slice::index::slice_end_index_len_fail_rt``
+* Add ``core::slice::index::slice_end_index_len_fail`` to the prefix list
+* bug 1733904: fix comments from bad copypasta
+* bug 1745732: improve signatures for crash reports with thread index issues
+* bug 1788269: add inline functions to signature
+* Bug 1790051 - Streamline the irrelevant signatures on Linux, macOS and Windows
+
+
 1.0.20220909 (September 9th, 2022)
 ==================================
 
@@ -14,7 +52,7 @@ Bug fixes:
 * Fix fetch-data TypeError (#90)
 * Switch to calver (#95)
 * bug 1787933: exorcise flash from the codebase
-* bug 1733904: add "bad hardware" to signature for STATUS_DEVICE_DATA_ERROR
+* bug 1733904: add "bad hardware" to signature for ``STATUS_DEVICE_DATA_ERROR``
 * Bug 1784464 - Add Android's compiler builtin functions to the irrelevant
   function list
 
