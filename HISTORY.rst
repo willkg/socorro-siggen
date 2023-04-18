@@ -2,6 +2,63 @@
 History
 =======
 
+1.1.20230418 (April 18th, 2023)
+===============================
+
+Bug fixes:
+
+* Switch from flake8 to ruff (#106)
+* Bug 1819178 - Add ``nsStringBuffer::`` to prefix list
+* Bug 1827660 - Add ``do_AddRef`` to the irrelevant list
+* bug 1827480: add ``Gecko_AppendCString`` to prefix list
+* bug 1799528: fix bugbear issues
+* Bug 1795651 - Ignore operations on hash tables and maps when generating a
+  crash signature
+* Bug 1824981 - Ignore some of the implementation details of the Rust
+  ``Result<>`` type when generating a signature
+* Add ``std::alloc::_::__rg_oom`` to irrelevant_signature_re.txt
+* Bug 1822931 - Fix constant reference qualifiers in signatures
+* Bug 1821453 - Ignore array iterator methods and the ``std::all_of()``
+  function when generating a crash signature
+* Bug 1821641 - Ignore functions used to store crash annotations, manipulate
+  POD objects and write objects via IPC
+* Bug 1819065 - Ignore several helpers, getters and constructors related to
+  launching runnables when generating crash signatures
+* Bug 1819062 - Ignore equality operators when generating crash signatures
+* Bug 1816846 - Ignore various methods related to locks and promises to shorten
+  signatures and peel apart different crashes
+* bug 1815235: stringify cond names in SignatureShutdownTimeout rule
+* Bug 1814563 - Ignore some getters in media code when generating the crash
+  signature
+* Bug 1811094 - Ignore thread-local storage getters when generating the crash
+  signature
+* Bug 1810971 - Ignore several inlined functions from the ``MozPromise`` class
+* Bug 1810519 - Ignore all functions starting with ``__futex_abstimed_wait``
+* Bug 1809847 - Add rust enum methods and others to the list of irrelevant
+  functions
+* bug 1806119: add ``nsQueryObject<T>::operator`` to irrelevant list
+* Bug 1806107 - Improve Linux shutdown hang signatures
+* Switch to using ``contextlib.suppress``
+* bug 1796094: fix ``JSLargeAllocationFailure`` OOM detection
+* Bug 1795631 - Ignore the ``RefPtr`` class and its helpers in signature
+  generation
+* Bug 1800132 - Tweaked signature generation for WebRTC crashes
+* bug 1796094: mark ``JSLargeAllocationFailure=Reported`` as ``OOM | large``
+* Bug 1804025 - Ignore functions used to access slices and vectors in Rust when
+  generating the crash signature
+* bug 1802715: add ``new[]`` to prefix list
+* Update ``socorro/signature/siglists/prefix_signature_re.txt``
+* Bug 1802315 - add ``mozilla::dom::Promise::*`` as signature prefix
+* Bug 1801623 - Ignore worker-related functions during crash signature
+  generation
+* Bug 1801603 - Ignore some functions manipulating JS objects when generating
+  crash signatures
+* Bug 1801043 - Ignore various core rust functions when generating the crash
+  signature
+* Bug 1800460 - Ignore ``mozilla::ThreadSafeAutoRefCnt`` when generating crash
+  signatures
+
+
 1.1.20221108 (November 8th, 2022)
 =================================
 
