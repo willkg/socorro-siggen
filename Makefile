@@ -16,7 +16,7 @@ clean:  ## Clean build artifacts
 
 .PHONY: lint
 lint:  ## Lint files
-	tox -e py39-flake8
+	tox -e py39-lint
 
 .PHONY: test
 test:  ## Run tests
