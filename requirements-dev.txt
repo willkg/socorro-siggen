@@ -3,8 +3,8 @@
 
 check-manifest==0.48
 build==0.9.0
-flake8==5.0.4
 pytest==7.2.0
+ruff==0.0.261
 tox==3.27.0
 tox-gh-actions==2.10.0
 twine==4.0.1
