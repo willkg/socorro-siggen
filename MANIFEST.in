@@ -4,6 +4,7 @@ include HISTORY.rst
 include CODE_OF_CONDUCT.md
 include tox.ini
 include Makefile
+include requirements-dev.txt
 include siggen/socorro_sha.txt
 
 recursive-include bin *.sh
