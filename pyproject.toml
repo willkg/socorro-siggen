@@ -34,6 +34,7 @@ python =
 
 [testenv]
 deps = -rrequirements-dev.txt
+allowlist_externals = {toxinidir}/bin/run_cmd_tests.sh
 commands = 
     pytest
     {toxinidir}/bin/run_cmd_tests.sh
@@ -46,6 +47,7 @@ commands =
 [testenv:py39-norequests]
 deps =
 install_command = pip install {packages}
+allowlist_externals = {toxinidir}/bin/run_cmd_tests.sh
 commands =
     {toxinidir}/bin/run_cmd_tests.sh --no-requests
 """
