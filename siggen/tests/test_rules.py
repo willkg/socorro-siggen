@@ -43,10 +43,10 @@ def test_fix_missing_module(frame, expected_function):
 class TestCSignatureTool:
     @staticmethod
     def setup_config_c_sig_tool(
-        ig=["ignored1"],
-        pr=["pre1", "pre2"],
-        si=["fnNeedNumber"],
-        td=[r"foo32\.dll.*"],
+        ig=("ignored1",),
+        pr=("pre1", "pre2"),
+        si=("fnNeedNumber",),
+        td=(r"foo32\.dll.*",),
         ss=("sentinel", ("sentinel2", lambda x: "ff" in x)),
     ):
         tool = rules.CSignatureTool()
@@ -364,6 +364,11 @@ class TestCSignatureTool:
                 "mozilla::jni::GlobalRef<mozilla::jni::Object>::operator=(mozilla::jni::Ref<mozilla::jni::Object, _jobject*> const&)&",
                 "23",  # noqa
                 "mozilla::jni::GlobalRef<T>::operator=",
+            ),
+            (
+                "mozilla::Maybe<unsigned long>::value() const &",
+                "23",  # noqa
+                "mozilla::Maybe<T>::value",
             ),
             # Normalize anonymous namespace
             ("`anonymous namespace'::foo", "23", "(anonymous namespace)::foo"),
@@ -1376,6 +1381,21 @@ class TestOOMSignature:
         rule = rules.OOMSignature()
         assert rule.predicate(crash_data, result) is expected
 
+    @pytest.mark.parametrize(
+        "value, expected",
+        [
+            (None, False),
+            ("Reporting", True),
+            ("Reported", False),
+        ],
+    )
+    def test_predicate_js_large_allocation_failure(self, value, expected):
+        crash_data = {"js_large_allocation_failure": value}
+        result = generator.Result()
+        result.signature = "Text"
+        rule = rules.OOMSignature()
+        assert rule.predicate(crash_data, result) is expected
+
     def test_action_success(self):
         crash_data = {}
         result = generator.Result()
@@ -1398,6 +1418,17 @@ class TestOOMSignature:
 
     def test_action_large(self):
         crash_data = {"oom_allocation_size": 17000000}
+        result = generator.Result()
+        result.signature = "hello"
+
+        rule = rules.OOMSignature()
+        action_result = rule.action(crash_data, result)
+
+        assert action_result is True
+        assert result.signature == "OOM | large | hello"
+
+    def test_action_js_large_allocation_failure(self):
+        crash_data = {"js_large_allocation_failure": "Reporting"}
         result = generator.Result()
         result.signature = "hello"
 

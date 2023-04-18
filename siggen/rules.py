@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+from contextlib import suppress
 from functools import partial
 from itertools import islice
 import json
@@ -144,8 +145,9 @@ class CSignatureTool:
 
     def normalize_cpp_function(self, function, line):
         """Normalizes a single cpp frame with a function"""
-        # Drop member function cv/ref qualifiers like const, const&, &, and &&
-        for ref in ("const", "const&", "&&", "&"):
+        # Drop member function cv/ref qualifiers like const, const&, const &,
+        # &, and &&
+        for ref in ("const", "const&", "const &", "&&", "&"):
             if function.endswith(ref):
                 function = function[: -len(ref)].strip()
 
@@ -348,10 +350,8 @@ class CSignatureTool:
                 a_sentinel, condition_fn = a_sentinel
                 if not condition_fn(source_list):
                     continue
-            try:
+            with suppress(ValueError):
                 sentinel_locations.append(source_list.index(a_sentinel))
-            except ValueError:
-                pass
 
         if sentinel_locations:
             min_index = min(sentinel_locations)
@@ -719,9 +719,20 @@ class OOMSignature(Rule):
         if reason in self.oom_reason:
             return True
 
+        # Check js_large_allocation_failure to see if it's Reporting
+        js_large_allocation_failure = crash_data.get(
+            "js_large_allocation_failure", None
+        )
+        if js_large_allocation_failure == "Reporting":
+            return True
         return False
 
     def action(self, crash_data, result):
+        if crash_data.get("js_large_allocation_failure") == "Reporting":
+            # If a JSLargeAllocationFailure was Reporting, then it's an OOM | large
+            result.set_signature(self.name, f"OOM | large | {result.signature}")
+            return True
+
         try:
             size = int(crash_data.get("oom_allocation_size"))
         except (TypeError, AttributeError, KeyError):
@@ -933,7 +944,7 @@ class SignatureShutdownTimeout(Rule):
                 # be a string that looks like a "name" or a dict with a "name" in it.
                 #
                 # This handles both variations.
-                c["name"] if isinstance(c, dict) else c
+                str(c["name"] if isinstance(c, dict) else c)
                 for c in shutdown_data.get("conditions") or []
             ]
             if conditions:
