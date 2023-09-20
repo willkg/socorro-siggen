@@ -6,7 +6,7 @@ select = ["E", "F", "B"]
 line-length = 88
 ignore = ["E501"]
 
-target-version = "py37"
+target-version = "py38"
 
 src = ["setup.py", "siggen"]
 
@@ -16,17 +16,22 @@ docstring-quotes = "double"
 
 [tool.black]
 line-length = 88
-target-version = ["py37"]
+target-version = ["py38"]
 
 
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py37,py38,py39,py310,py311,py39-lint,py39-norequests
+envlist =
+    py38
+    py39
+    py310
+    py311
+    py39-lint
+    py39-norequests
 
 [gh-actions]
 python =
-    3.7: py37
     3.8: py38
     3.9: py39, py39-lint, py39-norequests
     3.10: py310
