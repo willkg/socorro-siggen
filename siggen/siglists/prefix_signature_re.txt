@@ -96,14 +96,17 @@ mozalloc_abort
 mozalloc_handle_oom
 moz_malloc_size_of
 mozilla::CheckCheckedUnsafePtrs<T>::Check
+mozilla::CheckedInt
 mozilla::detail::InvalidArrayIndex_CRASH
 mozilla::detail::nsTStringRepr<T>::
 mozilla::dom::AutoJSAPI::Init
 mozilla::dom::Promise::
+mozilla::dom::syncedcontext::Transaction<T>::Commit
 mozilla::dom::ToJSValue
 mozilla::DOMEventTargetHelper::AddRef
 mozilla::Maybe<T>
 mozilla::net::ShutdownEvent::PostAndWait
+mozilla::SegmentedVector
 mozilla::TimeStamp::Now
 mozilla::TimeStamp::operator
 mozilla::TimeStampValue::operator-
