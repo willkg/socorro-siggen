@@ -2,6 +2,33 @@
 History
 =======
 
+2.0.20231009 (October 9th, 2023)
+================================
+
+Big changes:
+
+* bug 1847429: implement signature generation for ``JavaException``
+* Drop support for Python 3.7 (#109)
+
+Bug fixes:
+
+* bug 1847429: protect against frames being None
+* bug 1847429: add schema docs for the crash data structure
+* bug 1826703: add "hang" to ``convert_to_crash_data``
+* Bug 1826703 - Add specific signatures for hung processes
+* Bug 1850325 - Ignore ``<std::collections::hash::map::HashMap<K, V, S> as core::ops::index::Index<&Q>>::index`` when generating crash signatures
+* Bug 1848162 - add ``mozilla::Span<T>`` as substring to ignore for signature generation
+* Bug 1845173 - Add ``SegmentedVector`` to the prefix list
+* bug 1845173 - add ``~nsCOMPtr`` and ``SegmentImpl`` to irrelevant list
+* Bug 1845406 - Add ``nsTArrayElementTraits`` to the irrelevant signature list
+* bug 1838201: add ``mozilla::CheckedInt`` to the prefix list
+* bug 1834536: add ``mozilla::dom::syncedcontext::Transaction<T>::Commit`` to prefix list
+* Update signature generation docs
+* Bug 1831836 - Improve rust panic crash signatures
+* Add dependabot to github actions
+* Add support for Python 3.12 (#110)
+
+
 1.1.20230418 (April 18th, 2023)
 ===============================
 

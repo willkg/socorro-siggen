@@ -41,7 +41,8 @@ siggen uses a calver scheme:
 
 MAJOR.MINOR.yyyymmdd
 
-* MAJOR: indicates incompatible API changes
+* MAJOR: indicates incompatible API changes -- listed as "big changes" in
+  HISTORY.rst
 * MINOR: indicates changes that are backwards-compatible
 * yyyymmdd: the release date
 
