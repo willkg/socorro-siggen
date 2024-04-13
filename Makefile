@@ -14,6 +14,10 @@ clean:  ## Clean build artifacts
 	find ${PROJECT}/ tests/ -name __pycache__ | xargs rm -rf
 	find ${PROJECT}/ tests/ -name '*.pyc' | xargs rm -rf
 
+.PHONY: format
+format:  ## Format Python files
+	tox exec -e py39-lint -- ruff format
+
 .PHONY: lint
 lint:  ## Lint files
 	tox -e py39-lint

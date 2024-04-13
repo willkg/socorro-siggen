@@ -1,22 +1,15 @@
 [tool.ruff]
-# Enable pycodestyle (E), pyflakes (F), and bugbear (B) rules
-select = ["E", "F", "B"]
-
-# Ignore line length violations--Black handles those
 line-length = 88
-ignore = ["E501"]
-
 target-version = "py38"
-
 src = ["setup.py", "siggen"]
 
-[tool.ruff.flake8-quotes]
+[tool.ruff.lint]
+# Enable pycodestyle (E), pyflakes (F), and bugbear (B) rules
+select = ["E", "F", "B"]
+ignore = ["E501"]
+
+[tool.ruff.lint.flake8-quotes]
 docstring-quotes = "double"
-
-
-[tool.black]
-line-length = 88
-target-version = ["py38"]
 
 
 [tool.tox]
@@ -49,7 +42,8 @@ commands =
 [testenv:py39-lint]
 deps = -rrequirements-dev.txt
 commands =
-    ruff setup.py siggen
+    ruff format --check setup.py siggen
+    ruff check setup.py siggen
 
 [testenv:py39-norequests]
 deps =

@@ -12,7 +12,9 @@ import sys
 try:
     import requests
 except ImportError:
-    print("Error importing requests. You need to install the cli extras.", file=sys.stderr)
+    print(
+        "Error importing requests. You need to install the cli extras.", file=sys.stderr
+    )
     print("Try: pip install 'siggen[cli]'", file=sys.stderr)
     sys.exit(1)
 
