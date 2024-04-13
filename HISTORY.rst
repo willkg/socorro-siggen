@@ -2,6 +2,22 @@
 History
 =======
 
+2.1.20240412 (April 12th, 2024)
+===============================
+
+Bug fixes:
+
+* bug-1889120: add Rust sub-slice access frames to prefix signature list
+* Bug 1885351 - Add ``nsCOMPtr<T>:: and nsMaybeWeakPtr<T>::`` to the irrelevant signature list.
+* Bug 1884689 - Add ``nsDocShell::GetBrowsingContext`` to the prefix list.
+* Bug 1882088 - Move ``nsTArray`` OOM things to the irrelevant list.
+* bug-1850981: update to python 3.11
+* bug-1876623: Treat ``<.plt ELF section...>`` as prefix signature
+* bug-1799125: switch from ``urlparse`` from ``urllib.parse`` to ``urlsplit``
+* Bug 1866857 - Ignore ``mozilla::Monitor::Lock`` when generating crash signatures
+* Bug 1862460 - Add ``mozilla::Vector<T>`` to the prefix list.
+
+
 2.0.20231009 (October 9th, 2023)
 ================================
 
