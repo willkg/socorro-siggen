@@ -5,7 +5,11 @@
 from pathlib import Path
 import re
 
-import importlib_resources
+# Use importlib_resources if it's there. Otherwise use the built-in version.
+try:
+    import importlib_resources
+except ImportError:
+    from importlib import resources as importlib_resources
 
 
 # This is a hack because sentinels can be a tuple, with the second item being
