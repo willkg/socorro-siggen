@@ -125,9 +125,9 @@ class TestCSignatureTool:
                     "trust": "cfi",
                 },
                 {
-                    "file": "F_766591945_______________________________________",
+                    "file": "F_766591945_____",
                     "frame": 5,
-                    "function": "F_1428703866________________________________",
+                    "function": "F_1428703866_____",
                     "function_offset": "0xc1",
                     "line": 203,
                     "module": "NPSWF32_14_0_0_125.dll",
@@ -148,7 +148,7 @@ class TestCSignatureTool:
             "WaitForMultipleObjectsExImplementation",
             "RealMsgWaitForMultipleObjectsEx",
             "MsgWaitForMultipleObjects",
-            "F_1428703866________________________________",
+            "F_1428703866_____",
         ]
         assert frame_signatures_list == expected
 
@@ -245,16 +245,19 @@ class TestCSignatureTool:
     @pytest.mark.parametrize(
         "args, expected",
         [
-            # module, function, file, line, module_offset, offset, unloaded_modules
+            # (module, function, file, line, module_offset, offset, unloaded_modules)
+            # no function, but has file with / and line
             (("module", "", "source/", "23", "0xfff"), "source#23"),
+            # no function but has file with \ and line
             (("module", "", "source\\", "23", "0xfff"), "source#23"),
+            # no function but has file with path and line
             (("module", "", "/a/b/c/source", "23", "0xfff"), "source#23"),
             (("module", "", "\\a\\b\\c\\source", "23", "0xfff"), "source#23"),
             (("module", "", "\\a\\b\\c\\source", "23", "0xfff"), "source#23"),
-            (("module", "", "\\a\\b\\c\\source", "", "0xfff"), "module@0xfff"),
-            (("module", "", "", "23", "0xfff"), "module@0xfff"),
-            (("module", "", "", "", "0xfff"), "module@0xfff"),
-            ((None, "", "", "", "0xfff"), "@0xfff"),
+            # no function or line, so uses module
+            (("module", "", "\\a\\b\\c\\source", "", "0xfff"), "module"),
+            # no function or file, so uses module
+            (("module", "", "", "", "0xfff"), "module"),
             # Make sure frame normalization uses the right function: normalize
             # Rust frame (has a Rust fingerprint)
             (
@@ -290,7 +293,7 @@ class TestCSignatureTool:
                     "",
                     [{"module": "unmod", "offsets": ["0x0000000000005387"]}],
                 ),
-                "(unloaded unmod@0x5387)",
+                "(unloaded unmod)",
             ),
         ],
     )
@@ -488,15 +491,15 @@ class TestCSignatureTool:
         source_list = [
             "a",
             "d",
-            "foo32.dll@0x231423",
             "foo32.dll",
-            "foo32.dll@0x42",
+            "foo32.dll",
+            "foo32.dll",
             "g",
         ]
         sig, notes, debug_notes = sig_tool.generate(source_list)
         assert sig == "d | foo32.dll | g"
 
-        source_list = ["foo32.dll", "foo32.dll@0x231423", "g"]
+        source_list = ["foo32.dll", "foo32.dll", "g"]
         sig, notes, debug_notes = sig_tool.generate(source_list)
         assert sig == "foo32.dll | g"
 
@@ -929,9 +932,9 @@ FRAMES_FROM_JSON_DUMP = {
             "trust": "cfi",
         },
         {
-            "file": "F117835525________________________________________",
+            "file": "F117835525_____",
             "frame": 5,
-            "function": "F_1152915508__________________________________",
+            "function": "F_1152915508_____",
             "function_offset": "0xbb",
             "line": 118,
             "module": "NPSWF32_14_0_0_125.dll",
@@ -940,9 +943,9 @@ FRAMES_FROM_JSON_DUMP = {
             "trust": "cfi",
         },
         {
-            "file": "F_851861807_______________________________________",
+            "file": "F_851861807_____",
             "frame": 6,
-            "function": "F2166389______________________________________",
+            "function": "F2166389_____",
             "function_offset": "0xe5",
             "line": 552,
             "module": "NPSWF32_14_0_0_125.dll",
@@ -951,9 +954,9 @@ FRAMES_FROM_JSON_DUMP = {
             "trust": "cfi",
         },
         {
-            "file": "F_851861807_______________________________________",
+            "file": "F_851861807_____",
             "frame": 7,
-            "function": "F_917831355___________________________________",
+            "function": "F_917831355_____",
             "function_offset": "0x29b",
             "line": 488,
             "module": "NPSWF32_14_0_0_125.dll",
@@ -962,9 +965,9 @@ FRAMES_FROM_JSON_DUMP = {
             "trust": "cfi",
         },
         {
-            "file": "F_851861807_______________________________________",
+            "file": "F_851861807_____",
             "frame": 8,
-            "function": "F1315696776________________________________",
+            "function": "F1315696776_____",
             "function_offset": "0xd",
             "line": 439,
             "module": "NPSWF32_14_0_0_125.dll",
@@ -973,9 +976,9 @@ FRAMES_FROM_JSON_DUMP = {
             "trust": "cfi",
         },
         {
-            "file": "F_766591945_______________________________________",
+            "file": "F_766591945_____",
             "frame": 9,
-            "function": "F_1428703866________________________________",
+            "function": "F_1428703866_____",
             "function_offset": "0xc1",
             "line": 203,
             "module": "NPSWF32_14_0_0_125.dll",
@@ -1048,9 +1051,9 @@ FRAMES_FROM_JSON_DUMP_WITH_TEMPLATES = {
             "trust": "cfi",
         },
         {
-            "file": "F117835525________________________________________",
+            "file": "F117835525_____",
             "frame": 5,
-            "function": "F_1152915508__________________________________",
+            "function": "F_1152915508_____",
             "function_offset": "0xbb",
             "line": 118,
             "module": "NPSWF32_14_0_0_125.dll",
@@ -1059,9 +1062,9 @@ FRAMES_FROM_JSON_DUMP_WITH_TEMPLATES = {
             "trust": "cfi",
         },
         {
-            "file": "F_851861807_______________________________________",
+            "file": "F_851861807_____",
             "frame": 6,
-            "function": "F2166389______________________________________",
+            "function": "F2166389_____",
             "function_offset": "0xe5",
             "line": 552,
             "module": "NPSWF32_14_0_0_125.dll",
@@ -1070,9 +1073,9 @@ FRAMES_FROM_JSON_DUMP_WITH_TEMPLATES = {
             "trust": "cfi",
         },
         {
-            "file": "F_851861807_______________________________________",
+            "file": "F_851861807_____",
             "frame": 7,
-            "function": "F_917831355___________________________________",
+            "function": "F_917831355_____",
             "function_offset": "0x29b",
             "line": 488,
             "module": "NPSWF32_14_0_0_125.dll",
@@ -1081,9 +1084,9 @@ FRAMES_FROM_JSON_DUMP_WITH_TEMPLATES = {
             "trust": "cfi",
         },
         {
-            "file": "F_851861807_______________________________________",
+            "file": "F_851861807_____",
             "frame": 8,
-            "function": "F1315696776________________________________",
+            "function": "F1315696776_____",
             "function_offset": "0xd",
             "line": 439,
             "module": "NPSWF32_14_0_0_125.dll",
@@ -1092,9 +1095,9 @@ FRAMES_FROM_JSON_DUMP_WITH_TEMPLATES = {
             "trust": "cfi",
         },
         {
-            "file": "F_766591945_______________________________________",
+            "file": "F_766591945_____",
             "frame": 9,
-            "function": "F_1428703866________________________________",
+            "function": "F_1428703866_____",
             "function_offset": "0xc1",
             "line": 203,
             "module": "NPSWF32_14_0_0_125.dll",
@@ -1166,9 +1169,9 @@ FRAMES_FROM_JSON_DUMP_WITH_TEMPLATES_AND_SPECIAL_CASE = {
             "trust": "cfi",
         },
         {
-            "file": "F117835525________________________________________",
+            "file": "F117835525_____",
             "frame": 5,
-            "function": "F_1152915508__________________________________",
+            "function": "F_1152915508_____",
             "function_offset": "0xbb",
             "line": 118,
             "module": "NPSWF32_14_0_0_125.dll",
@@ -1177,9 +1180,9 @@ FRAMES_FROM_JSON_DUMP_WITH_TEMPLATES_AND_SPECIAL_CASE = {
             "trust": "cfi",
         },
         {
-            "file": "F_851861807_______________________________________",
+            "file": "F_851861807_____",
             "frame": 6,
-            "function": "F2166389______________________________________",
+            "function": "F2166389_____",
             "function_offset": "0xe5",
             "line": 552,
             "module": "NPSWF32_14_0_0_125.dll",
@@ -1188,9 +1191,9 @@ FRAMES_FROM_JSON_DUMP_WITH_TEMPLATES_AND_SPECIAL_CASE = {
             "trust": "cfi",
         },
         {
-            "file": "F_851861807_______________________________________",
+            "file": "F_851861807_____",
             "frame": 7,
-            "function": "F_917831355___________________________________",
+            "function": "F_917831355_____",
             "function_offset": "0x29b",
             "line": 488,
             "module": "NPSWF32_14_0_0_125.dll",
@@ -1199,9 +1202,9 @@ FRAMES_FROM_JSON_DUMP_WITH_TEMPLATES_AND_SPECIAL_CASE = {
             "trust": "cfi",
         },
         {
-            "file": "F_851861807_______________________________________",
+            "file": "F_851861807_____",
             "frame": 8,
-            "function": "F1315696776________________________________",
+            "function": "F1315696776_____",
             "function_offset": "0xd",
             "line": 439,
             "module": "NPSWF32_14_0_0_125.dll",
@@ -1210,9 +1213,9 @@ FRAMES_FROM_JSON_DUMP_WITH_TEMPLATES_AND_SPECIAL_CASE = {
             "trust": "cfi",
         },
         {
-            "file": "F_766591945_______________________________________",
+            "file": "F_766591945_____",
             "frame": 9,
-            "function": "F_1428703866________________________________",
+            "function": "F_1428703866_____",
             "function_offset": "0xc1",
             "line": 203,
             "module": "NPSWF32_14_0_0_125.dll",
@@ -1258,9 +1261,7 @@ class TestSignatureGenerationRule:
         # the call to be tested
         assert sgr.action(crash_data, result) is True
 
-        expected = (
-            "MsgWaitForMultipleObjects | F_1152915508__________________________________"
-        )
+        expected = "MsgWaitForMultipleObjects | F_1152915508_____"
         assert result.signature == expected
 
         expected_normalized_frames = [
@@ -1269,11 +1270,11 @@ class TestSignatureGenerationRule:
             "WaitForMultipleObjectsExImplementation",
             "RealMsgWaitForMultipleObjectsEx",
             "MsgWaitForMultipleObjects",
-            "F_1152915508__________________________________",
-            "F2166389______________________________________",
-            "F_917831355___________________________________",
-            "F1315696776________________________________",
-            "F_1428703866________________________________",
+            "F_1152915508_____",
+            "F2166389_____",
+            "F_917831355_____",
+            "F1315696776_____",
+            "F_1428703866_____",
         ]
         expected_proto_signature = " | ".join(expected_normalized_frames)
 
@@ -1301,11 +1302,11 @@ class TestSignatureGenerationRule:
             "WaitForMultipleObjectsExImplementation",
             "RealMsgWaitForMultipleObjectsEx",
             "MsgWaitForMultipleObjects",
-            "F_1152915508__________________________________",
-            "F2166389______________________________________",
-            "F_917831355___________________________________",
-            "F1315696776________________________________",
-            "F_1428703866________________________________",
+            "F_1152915508_____",
+            "F2166389_____",
+            "F_917831355_____",
+            "F1315696776_____",
+            "F_1428703866_____",
         ]
         expected_proto_signature = " | ".join(expected_normalized_frames)
         assert result.extra["proto_signature"] == expected_proto_signature
@@ -1327,7 +1328,7 @@ class TestSignatureGenerationRule:
 
         assert (
             result.signature
-            == "<name omitted> | IPC::ParamTraits<mozilla::net::NetAddr>::Write"
+            == "<name omitted> | IPC::ParamTraits<mozilla::net::NetAddr>::Write | MsgWaitForMultipleObjects | F_1152915508_____"  # noqa
         )
         expected_normalized_frames = [
             "NtWaitForMultipleObjects",
@@ -1335,11 +1336,11 @@ class TestSignatureGenerationRule:
             "IPC::ParamTraits<mozilla::net::NetAddr>::Write",
             "RealMsgWaitForMultipleObjectsEx",
             "MsgWaitForMultipleObjects",
-            "F_1152915508__________________________________",
-            "F2166389______________________________________",
-            "F_917831355___________________________________",
-            "F1315696776________________________________",
-            "F_1428703866________________________________",
+            "F_1152915508_____",
+            "F2166389_____",
+            "F_917831355_____",
+            "F1315696776_____",
+            "F_1428703866_____",
         ]
         expected_proto_signature = " | ".join(expected_normalized_frames)
         assert result.extra["proto_signature"] == expected_proto_signature
@@ -1393,7 +1394,7 @@ class TestSignatureGenerationRule:
             "@0x5e39bf21",
             "@0x5e39bf21",
             "@0x5e39bf21",
-            "user2.dll@0x20869",
+            "user2.dll",
         ]
         expected_proto_signature = " | ".join(expected_normalized_frames)
         assert result.extra["proto_signature"] == expected_proto_signature
@@ -1822,10 +1823,7 @@ class TestSignatureWatchDogRule:
         assert sgr.action(crash_data, result) is True
 
         # Verify the signature has been re-generated based on thread 0.
-        expected = (
-            "shutdownhang | MsgWaitForMultipleObjects | "
-            "F_1152915508__________________________________"
-        )
+        expected = "shutdownhang | MsgWaitForMultipleObjects | " "F_1152915508_____"
         assert result.signature == expected
         assert result.notes == []
 
@@ -2033,42 +2031,6 @@ class TestSignatureIPCMessageName:
         action_result = rule.action(crash_data, result)
         assert action_result is True
         assert result.signature == "fooo::baar | IPC_Message_Name=foo, bar"
-
-
-class TestSignatureParentIDNotEqualsChildID:
-    def test_predicate_no_moz_crash_reason(self):
-        rule = rules.SignatureParentIDNotEqualsChildID()
-        result = {"signature": "", "notes": []}
-        assert rule.predicate({}, result) is False
-
-    def test_predicate_empty_moz_crash_reason(self):
-        rule = rules.SignatureParentIDNotEqualsChildID()
-        crash_data = {"moz_crash_reason": ""}
-        result = {"signature": "", "notes": []}
-        assert rule.predicate(crash_data, result) is False
-
-    def test_predicate_match(self):
-        rule = rules.SignatureParentIDNotEqualsChildID()
-        crash_data = {
-            "moz_crash_reason": "MOZ_RELEASE_ASSERT(parentBuildID == childBuildID)"
-        }
-        result = generator.Result()
-        result.signature = "fooo::baar"
-        assert rule.predicate(crash_data, result) is True
-
-    def test_action(self):
-        rule = rules.SignatureParentIDNotEqualsChildID()
-        crash_data = {
-            "moz_crash_reason": "MOZ_RELEASE_ASSERT(parentBuildID == childBuildID)"
-        }
-        result = generator.Result()
-        result.signature = "fooo::baar"
-        action_result = rule.action(crash_data, result)
-        assert action_result is True
-        assert result.signature == "parentBuildID != childBuildID"
-        assert result.notes == [
-            'SignatureParentIDNotEqualsChildID: Signature replaced with MOZ_RELEASE_ASSERT, was: "fooo::baar"'  # noqa
-        ]
 
 
 class TestHungProcess:
