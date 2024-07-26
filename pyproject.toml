@@ -2,7 +2,7 @@
 name = "siggen"
 description = "Socorro signature generation extracted as a Python library"
 # x.y.YYYYMMDD or x.y.YYYYMMDD.dev0 -- calver
-version = "2.1.20240412"
+version = "2.1.20240726"
 readme = "README.rst"
 keywords = ["socorro"]
 authors = [{name = "Will Kahn-Greene"}]

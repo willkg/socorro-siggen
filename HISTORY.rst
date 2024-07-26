@@ -2,6 +2,31 @@
 History
 =======
 
+2.1.20240726 (July 26th, 2024)
+==============================
+
+Bug fixes:
+
+* bug 1907894 - Add ``mozilla::Atomic<T>`` to the irrelevant signature list.
+* Bug 1906667 - Add ``mozilla::media::Interval<T>`` to the prefix list. (#6663)
+* Bug 1905714 - Only ``match JS::Call`` exactly in signatures. (#6652)
+* bug-1904528: add ``SafeVariantClear`` and ``VariantCopy`` to prefix list
+* bug-1904528: Update ``prefix_signature_re.txt``
+* Update ruff to 0.5.0
+* bug-1885919: Fix signature generation tests
+* bug-1885919: add ``IPC::ReadParam`` to irrelevant list
+* bug-1885919: add ``IPC::`` to pick up all IPC frames in signatures
+* Bug-1885919 - Add ``IPC::MessageReader::FatalError`` to sentinels list
+* Bug 1905094 - Improve signatures for JS context checks.
+* Bug 1903022 - Add ``Variant`` to the prefix list and ``VariantImplementation`` to the irrelevant list.
+* bug-1900995: remove ``SignatureParentIDNotEqualsChildID`` rule
+* bug-1898268: Some updates to the docs for signature generation changes. (#6624)
+* Bug 1860947 - Add ``ReleaseData`` and string buffer ``AddRef`` and ``Release`` methods to the irrelevant signature list (#6622)
+* bug-1895527: fix ``normalize_frame`` docstring
+* bug-1895527: remove extranneous paragraph and fix irrelevant/prefix lines
+* bug-1895527: remove addresses from signatures
+
+
 2.1.20240412 (April 12th, 2024)
 ===============================
 
