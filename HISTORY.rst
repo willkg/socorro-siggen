@@ -2,13 +2,16 @@
 History
 =======
 
-2.2.00000000 (in development)
-=============================
+2.2.20241029 (October 29th, 2024)
+=================================
 
 Bug fixes:
 
 * Drop support for Python 3.8. (#137)
 * Add support for Python 3.13. (#136)
+* bug 1926077: remove enclosing square bracket(s) from module name in signature generation (#6766)  (Bianca Danforth)
+* Bug 1914848 - Ignore the functions in libdspatch when generating crash signatures  (Gabriele Svelto)
+* Fix signature generation docs  (Will Kahn-Greene)
 
 
 2.1.20240726 (July 26th, 2024)
