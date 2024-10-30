@@ -8,6 +8,7 @@ History
 Bug fixes:
 
 * Drop support for Python 3.8. (#137)
+* Add support for Python 3.13. (#136)
 
 
 2.1.20240726 (July 26th, 2024)
