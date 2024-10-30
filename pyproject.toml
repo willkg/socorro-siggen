@@ -7,16 +7,14 @@ readme = "README.rst"
 keywords = ["socorro"]
 authors = [{name = "Will Kahn-Greene"}]
 license = {text = "MPLv2"}
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
     "glom",
-    "importlib_resources; python_version < '3.9'",
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -57,7 +55,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.ruff]
 line-length = 88
-target-version = "py38"
+target-version = "py39"
 src = ["setup.py", "siggen"]
 
 [tool.ruff.lint]
@@ -74,7 +72,6 @@ legacy_tox_ini = """
 [tox]
 isolated_build = True
 envlist =
-    py38
     py39
     py310
     py311
@@ -84,7 +81,6 @@ envlist =
 
 [gh-actions]
 python =
-    3.8: py38
     3.9: py39, py39-lint, py39-norequests
     3.10: py310
     3.11: py311
@@ -99,13 +95,13 @@ commands =
 
 [testenv:py39-lint]
 extras = dev,cli
+allowlist_externals = ruff
 commands =
     ruff format --check siggen
     ruff check siggen
 
 [testenv:py39-norequests]
 extras =
-install_command = pip install {packages}
 allowlist_externals = {toxinidir}/bin/run_cmd_tests.sh
 commands =
     {toxinidir}/bin/run_cmd_tests.sh --no-requests
